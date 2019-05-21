@@ -1,0 +1,26 @@
+# ============================================================================
+# PYTHON PACKAGE REQUIREMENTS FOR: teleinfo -- For development only
+# ============================================================================
+
+# -- BUILD-TOOL:
+# PREPARE USAGE: invoke
+invoke >= 1.2.0
+path.py >= 11.5.0
+pycmd
+
+# -- CONFIGURATION MANAGEMENT (helpers):
+bumpversion >= 0.4.0
+
+# -- DEVELOPMENT SUPPORT:
+# PREPARED: nose-cov >= 1.4
+tox   >= 1.8.1
+coverage >= 4.2
+pytest-cov
+
+# -- STATIC CODE ANALYSIS:
+pylint
+
+# -- REQUIRES: testing, docs, invoke-task requirements
+-r testing.txt
+-r docs.txt
+-r ../tasks/py.requirements.txt
