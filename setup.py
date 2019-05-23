@@ -72,8 +72,8 @@ setup(
     python_requires=">=3.5",
     # TODO: ESC need to check what needs to be changed
     install_requires=[
-        "pyserial",
         "pyserial-asyncio",
+        "pyserial",
     ],
     test_suite="nose.collector",
     tests_require=[
