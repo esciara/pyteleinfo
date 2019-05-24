@@ -1,0 +1,32 @@
+# test-alpine:
+#   image: python:3.6-alpine
+#   script:
+#   - pip install -q distro
+#   - distro 
+#   - distro -j
+#   - pip install -q -r py.requirements/ci.travis.txt
+#   - pip show setuptools
+#   - python setup.py -q install
+#   - python --version
+#   - pytest tests
+
+test-stretch:
+  image: python:3.6-stretch
+  before_script:
+    - python --version
+    - pip3 install poetry
+    - poetry config settings.virtualenvs.create false
+    - poetry install
+  script:
+    - poetry run invoke lint
+    - poetry run invoke test
+
+doc:
+  image: python:3.6-alpine
+  before_script:
+    - python --version
+    - pip3 install poetry
+    - poetry config settings.virtualenvs.create false
+    - poetry install
+  script:
+    - poetry run invoke html

@@ -1,1 +1,0 @@
-"""The tests for Serial Teleinfo platform."""

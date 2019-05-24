@@ -1,8 +1,0 @@
-# ============================================================================
-# PYTHON PACKAGE REQUIREMENTS FOR: teleinfo -- For testing only
-# ============================================================================
-
-# -- TESTING: Unit tests and behave tests.
-# PREPARED-FUTURE: behave4cmd0, behave4cmd
--r testing-basic.txt
--r testing-extra.txt

@@ -5,6 +5,12 @@ Welcome to pyteleinfo's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   development
+
+.. toctree::
+   :caption: Programmer Reference
+
+   api
 
 Indices and tables
 ==================
