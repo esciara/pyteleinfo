@@ -1,18 +1,25 @@
+"""
+All package specific exceptions
+"""
+
+
 class TeleinfoError(Exception):
-    """Basic exception for errors raised by teleinfo"""
+    """Base exception for errors raised by teleinfo"""
 
 
-class BaseFormatError(TeleinfoError):
+class TeleinfoDecodingError(TeleinfoError):
+    """Base exception for errors raised by teleinfo during decoding of a frame"""
+
+
+class BaseFormatError(TeleinfoDecodingError):
     """The format of a frame is invalid"""
 
-    def __init__(self, string_verified, object_type_verified: str,
-                 errors: str = None):
+    def __init__(self, string_verified, object_type_verified: str, errors: str = None):
         if isinstance(string_verified, str):
             string_verified = string_verified.encode()
-        msg = "{} format verified: '{}'".format(object_type_verified,
-                                                string_verified)
+        msg = f"{object_type_verified} format verified for: '{string_verified}'"
         if errors is not None:
-            msg = ' | '.join([msg, errors])
+            msg = " | ".join([msg, errors])
         super().__init__(msg)
 
 
@@ -20,28 +27,28 @@ class FrameFormatError(BaseFormatError):
     """The format of a frame is invalid"""
 
     def __init__(self, frame, errors: str = None):
-        super().__init__(string_verified=frame, object_type_verified="Frame",
-                         errors=errors)
+        super().__init__(
+            string_verified=frame, object_type_verified="Frame", errors=errors
+        )
 
 
 class InfoGroupFormatError(BaseFormatError):
     """The format of a group of information within a frame is invalid"""
 
     def __init__(self, info_group: str, errors: str = None):
-        super().__init__(string_verified=info_group,
-                         object_type_verified="Info group", errors=errors)
+        super().__init__(
+            string_verified=info_group, object_type_verified="Info group", errors=errors
+        )
 
 
-class ChecksumError(TeleinfoError):
+class ChecksumError(TeleinfoDecodingError):
     """The checksum of a group of information within a frame is invalid"""
 
-    def __init__(self, label_data_and_separators, checksum, checksum_1, checksum_2,
-                 msg=None):
+    def __init__(self, label_data_and_separators, checksums, msg=None):
         if msg is None:
-            msg = 'Needed checksum \'{}\' to validate the info group \'{}\', ' \
-                  'but was neither matched by neither method 1 checksum (= \'{}\'), ' \
-                  'nor by method 2 checksum (= \'{}\')'.format(checksum,
-                                                               label_data_and_separators,
-                                                               checksum_1,
-                                                               checksum_2)
+            msg = (
+                f"Needed checksum '{checksums[0]}' to validate the info group '{label_data_and_separators}', "
+                f"but was neither matched by method 1 checksum (= '{checksums[1]}'), "
+                f"nor by method 2 checksum (= '{checksums[2]}')"
+            )
         super().__init__(msg)
