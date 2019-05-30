@@ -22,9 +22,10 @@
 #    - poetry run invoke test
 #
 doc:
-  image: python:3.6-alpine
+  image: python:3.6-stretch
+#  image: python:3.6-alpine
   before_script:
-    - apk add build-base
+#    - apk add build-base
     - python --version
     - pip3 install poetry
     - poetry config settings.virtualenvs.create false
