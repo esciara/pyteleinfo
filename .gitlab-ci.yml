@@ -10,20 +10,22 @@
 #   - python --version
 #   - pytest tests
 
-test-stretch:
-  image: python:3.6-stretch
-  before_script:
-    - python --version
-    - pip3 install poetry
-    - poetry config settings.virtualenvs.create false
-    - poetry install
-  script:
-    - poetry run invoke lint
-    - poetry run invoke test
-
+#test-stretch:
+#  image: python:3.6-stretch
+#  before_script:
+#    - python --version
+#    - pip3 install poetry
+#    - poetry config settings.virtualenvs.create false
+#    - poetry install
+#  script:
+#    - poetry run invoke lint
+#    - poetry run invoke test
+#
 doc:
   image: python:3.6-alpine
   before_script:
+    - sudo apt-get update
+    - sudo apt-get install build-essential
     - python --version
     - pip3 install poetry
     - poetry config settings.virtualenvs.create false
