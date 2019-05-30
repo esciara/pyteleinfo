@@ -9,8 +9,9 @@ pty = sys.stdout.isatty()
 
 def get_package_name() -> str:
     pyproject = toml.load(open("pyproject.toml", "r"))
-    packages_list = [item['include'] for item in pyproject["tool"]["poetry"][
-        "packages"]]
+    packages_list = [
+        item["include"] for item in pyproject["tool"]["poetry"]["packages"]
+    ]
     packages = " ".join(packages_list)
     return packages
 
@@ -19,10 +20,19 @@ def get_package_name() -> str:
 def lint(c):
     package_name = get_package_name()
     nproc = multiprocessing.cpu_count()
+
+    someone_failed = False
     # skip mypy for the time being
     # c.run(f'mypy --config-file mypy.ini {package_name} tests', echo=True, pty=pty)
-    c.run(f"pylint --jobs {nproc} {package_name} tests", echo=True, pty=pty)
-    c.run(f"pydocstyle {package_name} tests", echo=True, pty=pty)
+    if c.run(
+        f"pylint --jobs {nproc} {package_name} tests", echo=True, pty=pty, warn=True
+    ).failed:
+        someone_failed = True
+    if c.run(f"pydocstyle {package_name} tests", echo=True, pty=pty, warn=True):
+        someone_failed = True
+
+    if someone_failed:
+        sys.exit(1)
 
 
 @task
