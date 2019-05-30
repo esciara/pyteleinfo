@@ -1,6 +1,8 @@
 """
 All package specific exceptions
 """
+
+
 class TeleinfoError(Exception):
     """Basic exception for errors raised by teleinfo"""
 
@@ -38,16 +40,14 @@ class InfoGroupFormatError(BaseFormatError):
 class ChecksumError(TeleinfoError):
     """The checksum of a group of information within a frame is invalid"""
 
-    def __init__(
-        self, label_data_and_separators, checksum, checksum_1, checksum_2, msg=None
-    ):
+    def __init__(self, label_data_and_separators, checksums, msg=None):
         if msg is None:
             msg = (
                 "Needed checksum '{}' to validate the info group '{}', "
                 "but was neither matched by "
                 "neither method 1 checksum (= '{}'), "
                 "nor by method 2 checksum (= '{}')".format(
-                    checksum, label_data_and_separators, checksum_1, checksum_2
+                    checksums[0], label_data_and_separators, checksums[1], checksums[2]
                 )
             )
         super().__init__(msg)

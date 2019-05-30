@@ -222,7 +222,7 @@ def test_verify_checksum_raises_exception_on_incorrect_checksum():
     # Then they should be calculated correctly
     assert_that(
         calling(_verify_checksum).with_args(label_data_and_separators, checksum),
-        raises(ChecksumError),
+        raises(ChecksumError, r"\bNeeded checksum 'x' to validate the info group\b"),
         "Checksum verification should have failed but passes",
     )
 

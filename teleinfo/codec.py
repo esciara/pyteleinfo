@@ -281,7 +281,9 @@ def _verify_checksum(label_data_and_separators: str, checksum: str):
     checksum_1 = _checksum_method_1(label_data_and_separators)
     checksum_2 = _checksum_method_2(label_data_and_separators)
     if checksum not in (checksum_1, checksum_2):
-        raise ChecksumError(label_data_and_separators, checksum, checksum_1, checksum_2)
+        raise ChecksumError(
+            label_data_and_separators, [checksum, checksum_1, checksum_2]
+        )
 
 
 def _checksum_method_1(label_data_and_separators: str) -> str:
