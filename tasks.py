@@ -28,7 +28,7 @@ def lint(c):
         f"pylint --jobs {nproc} {package_name} tests", echo=True, pty=pty, warn=True
     ).failed:
         someone_failed = True
-    if c.run(f"pydocstyle {package_name} tests", echo=True, pty=pty, warn=True):
+    if c.run(f"pydocstyle {package_name} tests", echo=True, pty=pty, warn=True).failed:
         someone_failed = True
 
     if someone_failed:
