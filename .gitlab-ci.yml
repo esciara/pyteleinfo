@@ -29,4 +29,4 @@ doc:
     - poetry config settings.virtualenvs.create false
     - poetry install
   script:
-    - poetry run invoke html
+    - poetry run invoke docs
