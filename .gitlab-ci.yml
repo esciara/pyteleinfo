@@ -24,8 +24,7 @@
 doc:
   image: python:3.6-alpine
   before_script:
-    - apt-get update
-    - apt-get install build-essential
+    - apk add build-base
     - python --version
     - pip3 install poetry
     - poetry config settings.virtualenvs.create false
