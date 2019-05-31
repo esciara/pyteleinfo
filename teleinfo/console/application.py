@@ -9,5 +9,5 @@ class Application(BaseApplication):
     def __init__(self):
         super().__init__("PyTeleinfo", __version__)
 
-        # self.add(PortCommand())
+        self.add(PortCommand())
         self.add(DiscoveryCommand())

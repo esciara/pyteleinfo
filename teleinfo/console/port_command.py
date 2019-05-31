@@ -7,6 +7,7 @@ import sys
 import serial
 from cleo import Command
 
+from ..exceptions import TeleinfoError
 from ..codec import decode
 from ..const import ETX, ENCODING
 from teleinfo import serial_asyncio
@@ -28,7 +29,44 @@ VALID_FRAME = (
 )
 
 
-class PortCommand(Command):
+class BaseCommand(Command):
+    """
+    Teleinfo Base Command
+    """
+
+    async def _test_port_for_teleinfo(
+        self, port, raw_flag=False, max_frames=3, timeout=5.0
+    ):
+        success = True
+        self.info(
+            f"Trying to ready port '{port}' for {timeout} secs... "
+            f"Will print a max of {max_frames} frames..."
+        )
+        try:
+            for i in range(max_frames):
+                frame = await asyncio.wait_for(
+                    asyncio.ensure_future(async_receive_frame(port)), timeout=timeout
+                )
+                if raw_flag:
+                    print(frame)
+                else:
+                    frame_json = json.dumps(decode(frame))
+                    self.line(frame_json)
+        except serial.SerialException as e:
+            self.line_error(f"<error>{e.__repr__()}</>")
+            success = False
+        except TeleinfoError as e:
+            self.line_error(f"<error>{e.__repr__()}</>")
+            success = False
+        except asyncio.TimeoutError:
+            self.comment("Timeout!")
+            success = False
+        # Add a sleep so that output buffer can be flushed
+        await asyncio.sleep(0)
+        return success
+
+
+class PortCommand(BaseCommand):
     """
     Teleinfo port
 
@@ -51,32 +89,12 @@ class PortCommand(Command):
         send_task = asyncio.ensure_future(send(master, VALID_FRAME))
 
         port = slave_name_
-        timeout = 5.0
-        max_frames = 3
-        self.info(
-            f"Trying to ready port '{port}' for {timeout} secs... "
-            f"Will print a max of {max_frames} frames..."
-        )
-
-        try:
-            for i in range(max_frames):
-                frame = await asyncio.wait_for(
-                    asyncio.ensure_future(async_receive_frame(port)), timeout=timeout
-                )
-                if self.option("raw"):
-                    print(frame)
-                else:
-                    frame_json = json.dumps(decode(frame))
-                    self.line(frame_json)
-        except serial.SerialException as e:
-            self.line_error(f"<error>{e.__repr__()}</>")
-        except asyncio.TimeoutError:
-            self.comment("Timeout!")
+        await self._test_port_for_teleinfo(port, self.option("raw"))
 
         send_task.cancel()
 
 
-class DiscoveryCommand(Command):
+class DiscoveryCommand(BaseCommand):
     """
     Teleinfo Discovery: will try to discover a port that receives teleinfo data
 
@@ -85,12 +103,32 @@ class DiscoveryCommand(Command):
 
     def handle(self):
         self.info("Looking for serial ports...")
-        self.info("Serial ports found:")
 
-        lines = _list_ports()
-        print("program output:", lines)
+        master, slave = pty.openpty()  # open the pseudoterminal
+        slave_name_ = os.ttyname(slave)
+        send_task = asyncio.ensure_future(send(master, VALID_FRAME))
 
-        self.info("All done!")
+        ports = _list_ports()
+
+        ports.append(slave_name_)
+
+        self.line(f"List of ports found: {ports}")
+
+        success = False
+        for port in ports:
+            success = asyncio.get_event_loop().run_until_complete(
+                self._test_port_for_teleinfo(port)
+            )
+            if success:
+                self.comment(
+                    f"Port {port} receives valid teleinfo frames! Search " f"stopped."
+                )
+                break
+
+        if not success:
+            self.line("All com ports scanned. No port with teleinfo found.")
+
+        send_task.cancel()
 
 
 def _list_ports():
@@ -122,5 +160,5 @@ async def async_receive_frame(port: str):
         stopbits=serial.STOPBITS_ONE,
         rtscts=1,
     )
-    # TODO make sur this stop after a timeout
+    # TODO make sure this stops after a timeout
     return await slave_reader.readuntil(separator=ETX.encode(ENCODING))

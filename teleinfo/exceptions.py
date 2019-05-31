@@ -7,7 +7,7 @@ class TeleinfoError(Exception):
     """Base exception for errors raised by teleinfo"""
 
 
-class TeleinfoDecodingError(Exception):
+class TeleinfoDecodingError(TeleinfoError):
     """Base exception for errors raised by teleinfo during decoding of a frame"""
 
 
