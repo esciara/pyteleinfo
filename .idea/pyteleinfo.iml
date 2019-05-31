@@ -27,6 +27,7 @@
       <excludeFolder url="file://$MODULE_DIR$/tasks/_vendor" />
       <excludeFolder url="file://$MODULE_DIR$/teleinfo.egg-info" />
       <excludeFolder url="file://$MODULE_DIR$/teleinfo/pyteleinfo.egg-info" />
+      <excludeFolder url="file://$MODULE_DIR$/tests/.pytest_cache" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
