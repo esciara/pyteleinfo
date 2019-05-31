@@ -4,10 +4,14 @@ All package specific exceptions
 
 
 class TeleinfoError(Exception):
-    """Basic exception for errors raised by teleinfo"""
+    """Base exception for errors raised by teleinfo"""
 
 
-class BaseFormatError(TeleinfoError):
+class TeleinfoDecodingError(Exception):
+    """Base exception for errors raised by teleinfo during decoding of a frame"""
+
+
+class BaseFormatError(TeleinfoDecodingError):
     """The format of a frame is invalid"""
 
     def __init__(self, string_verified, object_type_verified: str, errors: str = None):
@@ -37,15 +41,14 @@ class InfoGroupFormatError(BaseFormatError):
         )
 
 
-class ChecksumError(TeleinfoError):
+class ChecksumError(TeleinfoDecodingError):
     """The checksum of a group of information within a frame is invalid"""
 
     def __init__(self, label_data_and_separators, checksums, msg=None):
         if msg is None:
             msg = (
                 "Needed checksum '{}' to validate the info group '{}', "
-                "but was neither matched by "
-                "neither method 1 checksum (= '{}'), "
+                "but was neither matched by method 1 checksum (= '{}'), "
                 "nor by method 2 checksum (= '{}')".format(
                     checksums[0], label_data_and_separators, checksums[1], checksums[2]
                 )
