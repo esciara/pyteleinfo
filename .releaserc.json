@@ -1,8 +1,39 @@
 {
   "branch": "master",
   "plugins": [
-    "@semantic-release/commit-analyzer",
-    "@semantic-release/release-notes-generator",
+    [
+      "@semantic-release/commit-analyzer",
+      {
+        "analyzeCommits": {
+          "preset": "eslint",
+          "parserOpts": {
+            "headerPattern": "/^(?::([\\w-]*):)?\\s*(\\w*):\\s*(.*)$/",
+            "headerCorrespondence": [
+              "emoji",
+              "tag",
+              "message"
+            ]
+          }
+        }
+      }
+    ],
+    [
+      "@semantic-release/release-notes-generator",
+      {
+        "generateNotes": {
+          "preset": "eslint",
+          parserOpts: {
+            // optional, only you want to have emoji commit support
+            "headerPattern": "/^(?::([\\w-]*):)?\\s*(\\w*):\\s*(.*)$/",
+            "headerCorrespondence": [
+              "emoji",
+              "tag",
+              "message"
+            ]
+          }
+        }
+      }
+    ],
     [
       "@semantic-release/changelog",
       {
