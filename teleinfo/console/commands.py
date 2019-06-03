@@ -2,11 +2,11 @@ import asyncio
 import json
 import os
 import pty
-import sys
 
 import serial
 from cleo import Command
 
+from .utils import _list_ports
 from ..exceptions import TeleinfoError
 from ..codec import decode
 from ..const import ETX, ENCODING
@@ -129,20 +129,6 @@ class DiscoveryCommand(BaseCommand):
             self.line("All com ports scanned. No port with teleinfo found.")
 
         send_task.cancel()
-
-
-def _list_ports():
-    import subprocess
-
-    proc = subprocess.Popen(
-        ["python -m serial.tools.list_ports"], stdout=subprocess.PIPE, shell=True
-    )
-    (out, _) = proc.communicate()
-    import io
-
-    buf = io.StringIO(out.decode("ascii"))
-    lines = buf.read().splitlines()
-    return lines
 
 
 async def send(master, valid_frame):
