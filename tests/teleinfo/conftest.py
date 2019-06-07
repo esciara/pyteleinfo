@@ -8,6 +8,15 @@ import pytest
 from teleinfo.codec import encode_info_group
 from teleinfo.const import CHECKSUM, DATA, ETX, LABEL, STX
 
+# import nest_asyncio
+#
+# # Fixes issues with running pytest.asyncio and having a
+# # “RuntimeError: This event loop is already running” when doing a
+# # asyncio.get_event_loop().run_until_complete(...)
+# # (see https://github.com/spyder-ide/spyder/issues/7096#issuecomment-449655308)
+# nest_asyncio.apply()
+
+
 VALID_FRAME_DATA = [
     {LABEL: "ADCO", DATA: "050022120078", CHECKSUM: "2"},
     {LABEL: "OPTARIF", DATA: "HC..", CHECKSUM: "<"},
@@ -83,6 +92,14 @@ async def valid_frame_json():
     yield VALID_FRAME_JSON
 
 
+from threading import Thread
+
+
+def start_background_loop(loop):
+    asyncio.set_event_loop(loop)
+    loop.run_forever()
+
+
 @pytest.fixture
 async def slave_name():
     master, slave = pty.openpty()  # open the pseudoterminal
@@ -93,10 +110,22 @@ async def slave_name():
     # print('valid_frame sent (ascii version): {}'.format(valid_frame.encode('ascii')))
     # send_task: asyncio.Future = asyncio.ensure_future(send_data(master,
     # VALID_FRAME_DATA))
-    send_task = asyncio.ensure_future(send(master, VALID_FRAME))
+    # Create a new loop
+    fixture_loop = asyncio.new_event_loop()
+
+    # Assign the loop to another thread
+    Thread(target=start_background_loop, args=(fixture_loop,)).start()
+    print("FIXTURE: sending task")
+    send_task = asyncio.run_coroutine_threadsafe(
+        send(master, VALID_FRAME), fixture_loop
+    )
+    # send_task = asyncio.ensure_future(send(master, VALID_FRAME))
     # send_task: asyncio.Future = asyncio.ensure_future(send(master, valid_frame))
+    print("FIXTURE: task sent. yielding")
     yield slave_name_
+    print("FIXTURE: cancelling send task")
     send_task.cancel()
+    fixture_loop.stop()
 
 
 # pylint: disable=redefined-outer-name

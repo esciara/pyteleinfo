@@ -64,12 +64,6 @@ classifiers = [
 [tool.poetry.dependencies]
 python = "^3.6"
 pyserial = "^3.4"
-pyserial-asyncio = "^0.4.0"
-pre-commit = "^1.16"
-isort = "^4.3"
-flake8 = "^3.7"
-flake8-bugbear = "^19.3"
-pylint = "^2.3"
 cleo = "^0.7.4"
 
 [tool.poetry.dev-dependencies]
@@ -91,6 +85,13 @@ toml = "^0.10.0"
 yapf = "^0.27.0"
 sphinx_bootstrap_theme = "^0.7.1"
 black = {version = "^18.3-alpha.0", python = "^3.6"}
+nest_asyncio = "^1.0"
+pre-commit = "^1.16"
+isort = "^4.3"
+flake8 = "^3.7"
+flake8-bugbear = "^19.3"
+tox = "^3.12"
+tox-pyenv = "^1.1"
 
 [tool.poetry.scripts]
 teleinfo = "teleinfo.console:main"

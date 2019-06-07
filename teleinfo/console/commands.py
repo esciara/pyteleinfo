@@ -2,6 +2,7 @@ import asyncio
 import json
 import os
 import pty
+import time
 
 import serial
 from cleo import Command
@@ -11,6 +12,9 @@ from ..exceptions import TeleinfoError
 from ..codec import decode
 from ..const import ETX, ENCODING
 from teleinfo import serial_asyncio
+
+# from teleinfo.console import LOOP
+
 
 VALID_FRAME = (
     b"\x02"
@@ -39,7 +43,7 @@ class BaseCommand(Command):
     ):
         success = True
         self.info(
-            f"Trying to ready port '{port}' for {timeout} secs... "
+            f"Trying to read port '{port}' for {timeout} secs... "
             f"Will print a max of {max_frames} frames..."
         )
         try:
@@ -66,6 +70,31 @@ class BaseCommand(Command):
         return success
 
 
+import threading
+
+
+def start_background_loop(loop):
+    print("THREAD: starting loop")
+    asyncio.set_event_loop(loop)
+    loop.run_forever()
+    print("THREAD: starting stop_event watch loop")
+    # while not stop_event.is_set():
+    #     time.sleep(1)
+    #     # pass
+    # print("THREAD: thread received stop_event.set()")
+
+
+def start_background_loop_with_event(stop_event, loop):
+    print("THREAD: starting loop")
+    asyncio.set_event_loop(loop)
+    loop.run_forever()
+    print("THREAD: starting stop_event watch loop")
+    while not stop_event.is_set():
+        # time.sleep(1)
+        pass
+    print("THREAD: thread received stop_event.set()")
+
+
 class PortCommand(BaseCommand):
     """
     Teleinfo port
@@ -78,20 +107,61 @@ class PortCommand(BaseCommand):
 
     def handle(self):
         self.info("Starting the loop...")
-        asyncio.get_event_loop().run_until_complete(self.async_handle())
-        self.info("All done!")
+        # loop = asyncio.get_event_loop()
+        # loop = asyncio.new_event_loop()
+        # asyncio.set_event_loop(loop)
+
+        # loop.run_until_complete(asyncio.ensure_future(self.async_handle(), loop=loop))
+        # loop.close()
+
+        # Give it some async work
+        # print("launching async_handle")
+        # Create a new loop
+
+        new_loop = asyncio.new_event_loop()
+
+        # pill2kill = threading.Event()
+
+        # Assign the loop to another thread
+        t = threading.Thread(target=start_background_loop, args=(new_loop,))
+        # t = threading.Thread(target=start_background_loop, args=(pill2kill, new_loop,))
+        t.start()
+        future = asyncio.run_coroutine_threadsafe(self.async_handle(), new_loop)
+
+        # Wait for the result
+        # print("printing result")
+        print(future.result())
+        future.cancel()
+        new_loop.stop()
+
+        # killing the thread
+        # pill2kill.set()
+        # t.join()
+
+        # ThreadPoolExecutor().submit(new_loop.run_until_complete(asyncio.ensure_future(
+        #     self.async_handle()))).result()
+        # asyncio.run_coroutine_threadsafe(new_loop.run_until_complete(asyncio.ensure_future(
+        #     self.async_handle())), new_loop).result()
+
+        # async def _async_init_from_config_dict(future):
+        #     try:
+        #         re_hass = await self.async_handle()
+        #         future.set_result(re_hass)
+        #     # pylint: disable=broad-except
+        #     except Exception as exc:
+        #         future.set_exception(exc)
+        #
+        # # run task
+        # future = asyncio.Future(loop=loop)
+        # loop.create_task(_async_init_from_config_dict(future))
+        # loop.run_until_complete(future)
+
+        # self.info("All done!")
 
     async def async_handle(self):
         port = self.argument("port")
-
-        master, slave = pty.openpty()  # open the pseudoterminal
-        slave_name_ = os.ttyname(slave)
-        send_task = asyncio.ensure_future(send(master, VALID_FRAME))
-
-        port = slave_name_
         await self._test_port_for_teleinfo(port, self.option("raw"))
-
-        send_task.cancel()
+        # TODO find out how to return an proper exit code
 
 
 class DiscoveryCommand(BaseCommand):
@@ -103,17 +173,9 @@ class DiscoveryCommand(BaseCommand):
 
     def handle(self):
         self.info("Looking for serial ports...")
-
-        master, slave = pty.openpty()  # open the pseudoterminal
-        slave_name_ = os.ttyname(slave)
-        send_task = asyncio.ensure_future(send(master, VALID_FRAME))
-
         ports = _list_ports()
-
-        ports.append(slave_name_)
-
         self.line(f"List of ports found: {ports}")
-
+        self.line(f"Checking port until a teleinfo port is found...")
         success = False
         for port in ports:
             success = asyncio.get_event_loop().run_until_complete(
@@ -127,14 +189,6 @@ class DiscoveryCommand(BaseCommand):
 
         if not success:
             self.line("All com ports scanned. No port with teleinfo found.")
-
-        send_task.cancel()
-
-
-async def send(master, valid_frame):
-    while True:
-        os.write(master, valid_frame)
-        await asyncio.sleep(0)
 
 
 async def async_receive_frame(port: str):
