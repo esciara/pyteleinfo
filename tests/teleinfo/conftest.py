@@ -2,6 +2,7 @@
 import asyncio
 import os
 import pty
+from asyncio import CancelledError
 
 import pytest
 
@@ -124,7 +125,10 @@ async def slave_name():
     print("FIXTURE: task sent. yielding")
     yield slave_name_
     print("FIXTURE: cancelling send task")
-    send_task.cancel()
+    try:
+        send_task.cancel()
+    except CancelledError:
+        pass
     fixture_loop.stop()
 
 

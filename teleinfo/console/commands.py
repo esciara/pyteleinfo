@@ -130,9 +130,15 @@ class PortCommand(BaseCommand):
 
         # Wait for the result
         # print("printing result")
+        # result = future.result()
         print(future.result())
         future.cancel()
+        # print(f"HANDLE: Loop is_running status: {new_loop.is_running()}")
+        # print(f"HANDLE: Loop is_closed status: {new_loop.is_closed()}")
+        # print("HANDLE: new_loop.stop()")
         new_loop.stop()
+        # print(f"HANDLE: Loop is_running status: {new_loop.is_running()}")
+        # print(f"HANDLE: Loop is_closed status: {new_loop.is_closed()}")
 
         # killing the thread
         # pill2kill.set()
