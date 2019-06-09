@@ -17,7 +17,7 @@ class BaseFormatError(TeleinfoDecodingError):
     def __init__(self, string_verified, object_type_verified: str, errors: str = None):
         if isinstance(string_verified, str):
             string_verified = string_verified.encode()
-        msg = "{} format verified: '{}'".format(object_type_verified, string_verified)
+        msg = f"{object_type_verified} format verified for: '{string_verified}'"
         if errors is not None:
             msg = " | ".join([msg, errors])
         super().__init__(msg)
@@ -47,10 +47,8 @@ class ChecksumError(TeleinfoDecodingError):
     def __init__(self, label_data_and_separators, checksums, msg=None):
         if msg is None:
             msg = (
-                "Needed checksum '{}' to validate the info group '{}', "
-                "but was neither matched by method 1 checksum (= '{}'), "
-                "nor by method 2 checksum (= '{}')".format(
-                    checksums[0], label_data_and_separators, checksums[1], checksums[2]
-                )
+                f"Needed checksum '{checksums[0]}' to validate the info group '{label_data_and_separators}', "
+                f"but was neither matched by method 1 checksum (= '{checksums[1]}'), "
+                f"nor by method 2 checksum (= '{checksums[2]}')"
             )
         super().__init__(msg)

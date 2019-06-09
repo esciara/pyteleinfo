@@ -52,7 +52,7 @@ def encode(info_groups: dict) -> str:
             for info_group in info_groups
         ]
     )
-    return "".join(["{}".format(STX), encoded_info_groups, "{}".format(ETX)])
+    return f"{STX}{encoded_info_groups}{ETX}"
 
 
 def decode(frame, verify_well_formed: bool = True) -> dict:
@@ -106,13 +106,9 @@ def encode_info_group(label: str, data: str, sep: str = SP) -> str:
     :param sep: separator that will be used (normally SP but could be HT)
     :return: info group in string format
     """
-    encoded_info_group = "{label}{SEP}{data}{SEP}".format(
-        label=label, SEP=sep, data=data
-    )
+    encoded_info_group = f"{label}{sep}{data}{sep}"
     checksum = _checksum_method_1(encoded_info_group)
-    return "{LF}{encoded_info_group}{checksum}{CR}".format(
-        LF=LF, encoded_info_group=encoded_info_group, checksum=checksum, CR=CR
-    )
+    return f"{LF}{encoded_info_group}{checksum}{CR}"
 
 
 def decode_info_group(
@@ -164,15 +160,15 @@ def _verify_frame_well_formed(frame: str):
     beginnings, ends = _extract_info_groups_positions(frame)
 
     if first_char != STX:
-        error = "First char should be STX but is '{}'".format(first_char.encode())
+        error = f"First char should be STX but is '{first_char.encode()}'"
         errors = _append_error(errors, error)
     if last_char != ETX:
-        error = "Last char should be ETX but is '{}'".format(last_char.encode())
+        error = f"Last char should be ETX but is '{last_char.encode()}'"
         errors = _append_error(errors, error)
     if len(beginnings) != len(ends):
         error = (
             "Should have as many beginnings (LF) as ends (CR) to delimit info "
-            "groups, but had ({}, {})".format(len(beginnings), len(ends))
+            f"groups, but had ({len(beginnings)}, {len(ends)})"
         )
         errors = _append_error(errors, error)
     else:
@@ -183,7 +179,7 @@ def _verify_frame_well_formed(frame: str):
             error = (
                 "Should always have a LF followed by a CR to delimit "
                 "info groups, but some where inverted "
-                "(pairs of LF/CR indices: {})".format(faulty_pairs)
+                f"(pairs of LF/CR indices: {faulty_pairs})"
             )
             errors = _append_error(errors, error)
     if errors is not None:
@@ -206,10 +202,10 @@ def _verify_frame_list_well_formed(frame: list):
     first_char, last_char = frame[0], frame[-1]
 
     if first_char != STX:
-        error = "First char should be STX but is '{}'".format(first_char)
+        error = f"First char should be STX but is '{first_char}'"
         errors = _append_error(errors, error)
     if last_char != ETX:
-        error = "Last char should be ETX but is '{}'".format(last_char)
+        error = f"Last char should be ETX but is '{last_char}'"
         errors = _append_error(errors, error)
     if errors is not None:
         raise FrameFormatError(frame, errors)
@@ -223,18 +219,16 @@ def _verify_info_group_well_formed(encoded_info_group: str):
     num_of_sep = num_of_sp_sep + num_of_ht_sep
 
     if first_char != LF:
-        error = "First char should be LF but is '{}'".format(first_char.encode())
+        error = f"First char should be LF but is '{first_char.encode()}'"
         errors = _append_error(errors, error)
     if last_char != CR:
-        error = "Last char should be CR but is '{}'".format(first_char.encode())
+        error = f"Last char should be CR but is '{first_char.encode()}'"
         errors = _append_error(errors, error)
     if num_of_sp_sep > 0 and num_of_ht_sep > 0:
         error = "Should not contain both CR and HT separators"
         errors = _append_error(errors, error)
     if num_of_sep < 2:
-        error = "Should contain at least 2 separators but has only '{}'".format(
-            num_of_sep
-        )
+        error = f"Should contain at least 2 separators but has only '{num_of_sep}'"
         errors = _append_error(errors, error)
     if errors is not None:
         raise InfoGroupFormatError(encoded_info_group, errors)

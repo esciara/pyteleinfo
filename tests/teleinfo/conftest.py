@@ -1,22 +1,12 @@
 # pylint: disable=missing-docstring
-import asyncio
+import threading
 import os
 import pty
-from asyncio import CancelledError
 
 import pytest
 
 from teleinfo.codec import encode_info_group
 from teleinfo.const import CHECKSUM, DATA, ETX, LABEL, STX
-
-# import nest_asyncio
-#
-# # Fixes issues with running pytest.asyncio and having a
-# # “RuntimeError: This event loop is already running” when doing a
-# # asyncio.get_event_loop().run_until_complete(...)
-# # (see https://github.com/spyder-ide/spyder/issues/7096#issuecomment-449655308)
-# nest_asyncio.apply()
-
 
 VALID_FRAME_DATA = [
     {LABEL: "ADCO", DATA: "050022120078", CHECKSUM: "2"},
@@ -93,47 +83,45 @@ async def valid_frame_json():
     yield VALID_FRAME_JSON
 
 
-from threading import Thread
+class OsWriteThread(threading.Thread):
+    """Thread class with a stop() method. The thread itself has to check
+    regularly for the stopped() condition."""
 
+    def __init__(self, master, frame, first_frame_dirty=False):
+        super().__init__()
+        self._stop_event = threading.Event()
+        self.master = master
+        self.frame = frame
+        self.first_frame_dirty = first_frame_dirty
 
-def start_background_loop(loop):
-    asyncio.set_event_loop(loop)
-    loop.run_forever()
+    def run(self):
+        if self.first_frame_dirty:
+            os.write(self.master, self.frame[5:])
+        while not self._stop_event.isSet():
+            os.write(self.master, self.frame)
+            self._stop_event.wait(0.1)
+
+    def stop(self):
+        self._stop_event.set()
+
+    def stopped(self):
+        return self._stop_event.is_set()
 
 
 @pytest.fixture
-async def slave_name():
+def slave():
+    yield from slave_dirty_or_not(False)
+
+
+@pytest.fixture
+def slave_with_dirty_first_frame():
+    yield from slave_dirty_or_not(True)
+
+
+def slave_dirty_or_not(first_frame_dirty):
     master, slave = pty.openpty()  # open the pseudoterminal
     slave_name_ = os.ttyname(slave)
-    # valid_frame = _build_frame(VALID_FRAME_DATA)
-    # print('valid_frame sent: {}'.format(valid_frame))
-    # print('valid_frame sent (bytes version): {}'.format(valid_frame.encode()))
-    # print('valid_frame sent (ascii version): {}'.format(valid_frame.encode('ascii')))
-    # send_task: asyncio.Future = asyncio.ensure_future(send_data(master,
-    # VALID_FRAME_DATA))
-    # Create a new loop
-    fixture_loop = asyncio.new_event_loop()
-
-    # Assign the loop to another thread
-    Thread(target=start_background_loop, args=(fixture_loop,)).start()
-    print("FIXTURE: sending task")
-    send_task = asyncio.run_coroutine_threadsafe(
-        send(master, VALID_FRAME), fixture_loop
-    )
-    # send_task = asyncio.ensure_future(send(master, VALID_FRAME))
-    # send_task: asyncio.Future = asyncio.ensure_future(send(master, valid_frame))
-    print("FIXTURE: task sent. yielding")
+    thread = OsWriteThread(master, VALID_FRAME, first_frame_dirty)
+    thread.start()
     yield slave_name_
-    print("FIXTURE: cancelling send task")
-    try:
-        send_task.cancel()
-    except CancelledError:
-        pass
-    fixture_loop.stop()
-
-
-# pylint: disable=redefined-outer-name
-async def send(master, valid_frame):
-    while True:
-        os.write(master, valid_frame)
-        await asyncio.sleep(0)
+    thread.stop()

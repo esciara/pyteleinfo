@@ -1,8 +1,5 @@
 import asyncio
 import json
-import os
-import pty
-import time
 
 import serial
 from cleo import Command
@@ -13,32 +10,13 @@ from ..codec import decode
 from ..const import ETX, ENCODING
 from teleinfo import serial_asyncio
 
-# from teleinfo.console import LOOP
-
-
-VALID_FRAME = (
-    b"\x02"
-    b"\nADCO 050022120078 2\r"
-    b"\nOPTARIF HC.. <\r"
-    b"\nISOUSC 45 ?\r"
-    b"\nHCHC 094939439 8\r"
-    b"\nHCHP 127970334 7\r"
-    b"\nPTEC HP..  \r"
-    b"\nIINST 009  \r"
-    b"\nIMAX 049 L\r"
-    b"\nPAPP 02160 *\r"
-    b"\nHHPHC E 0\r"
-    b"\nMOTDETAT 400000 F\r"
-    b"\x03"
-)
-
 
 class BaseCommand(Command):
     """
     Teleinfo Base Command
     """
 
-    async def _test_port_for_teleinfo(
+    async def _check_port_for_teleinfo(
         self, port, raw_flag=False, max_frames=3, timeout=5.0
     ):
         success = True
@@ -47,15 +25,9 @@ class BaseCommand(Command):
             f"Will print a max of {max_frames} frames..."
         )
         try:
+            await _discard_potentially_incomplete_first_frame(port, timeout)
             for i in range(max_frames):
-                frame = await asyncio.wait_for(
-                    asyncio.ensure_future(async_receive_frame(port)), timeout=timeout
-                )
-                if raw_flag:
-                    print(frame)
-                else:
-                    frame_json = json.dumps(decode(frame))
-                    self.line(frame_json)
+                self.line(await _extract_frame_to_print(port, raw_flag, timeout))
         except serial.SerialException as e:
             self.line_error(f"<error>{e.__repr__()}</>")
             success = False
@@ -70,31 +42,6 @@ class BaseCommand(Command):
         return success
 
 
-import threading
-
-
-def start_background_loop(loop):
-    print("THREAD: starting loop")
-    asyncio.set_event_loop(loop)
-    loop.run_forever()
-    print("THREAD: starting stop_event watch loop")
-    # while not stop_event.is_set():
-    #     time.sleep(1)
-    #     # pass
-    # print("THREAD: thread received stop_event.set()")
-
-
-def start_background_loop_with_event(stop_event, loop):
-    print("THREAD: starting loop")
-    asyncio.set_event_loop(loop)
-    loop.run_forever()
-    print("THREAD: starting stop_event watch loop")
-    while not stop_event.is_set():
-        # time.sleep(1)
-        pass
-    print("THREAD: thread received stop_event.set()")
-
-
 class PortCommand(BaseCommand):
     """
     Teleinfo port
@@ -106,67 +53,12 @@ class PortCommand(BaseCommand):
     """
 
     def handle(self):
-        self.info("Starting the loop...")
-        # loop = asyncio.get_event_loop()
-        # loop = asyncio.new_event_loop()
-        # asyncio.set_event_loop(loop)
-
-        # loop.run_until_complete(asyncio.ensure_future(self.async_handle(), loop=loop))
-        # loop.close()
-
-        # Give it some async work
-        # print("launching async_handle")
-        # Create a new loop
-
-        new_loop = asyncio.new_event_loop()
-
-        # pill2kill = threading.Event()
-
-        # Assign the loop to another thread
-        t = threading.Thread(target=start_background_loop, args=(new_loop,))
-        # t = threading.Thread(target=start_background_loop, args=(pill2kill, new_loop,))
-        t.start()
-        future = asyncio.run_coroutine_threadsafe(self.async_handle(), new_loop)
-
-        # Wait for the result
-        # print("printing result")
-        # result = future.result()
-        print(future.result())
-        future.cancel()
-        # print(f"HANDLE: Loop is_running status: {new_loop.is_running()}")
-        # print(f"HANDLE: Loop is_closed status: {new_loop.is_closed()}")
-        # print("HANDLE: new_loop.stop()")
-        new_loop.stop()
-        # print(f"HANDLE: Loop is_running status: {new_loop.is_running()}")
-        # print(f"HANDLE: Loop is_closed status: {new_loop.is_closed()}")
-
-        # killing the thread
-        # pill2kill.set()
-        # t.join()
-
-        # ThreadPoolExecutor().submit(new_loop.run_until_complete(asyncio.ensure_future(
-        #     self.async_handle()))).result()
-        # asyncio.run_coroutine_threadsafe(new_loop.run_until_complete(asyncio.ensure_future(
-        #     self.async_handle())), new_loop).result()
-
-        # async def _async_init_from_config_dict(future):
-        #     try:
-        #         re_hass = await self.async_handle()
-        #         future.set_result(re_hass)
-        #     # pylint: disable=broad-except
-        #     except Exception as exc:
-        #         future.set_exception(exc)
-        #
-        # # run task
-        # future = asyncio.Future(loop=loop)
-        # loop.create_task(_async_init_from_config_dict(future))
-        # loop.run_until_complete(future)
-
-        # self.info("All done!")
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(self.async_handle())
 
     async def async_handle(self):
         port = self.argument("port")
-        await self._test_port_for_teleinfo(port, self.option("raw"))
+        await self._check_port_for_teleinfo(port, self.option("raw"))
         # TODO find out how to return an proper exit code
 
 
@@ -185,7 +77,7 @@ class DiscoveryCommand(BaseCommand):
         success = False
         for port in ports:
             success = asyncio.get_event_loop().run_until_complete(
-                self._test_port_for_teleinfo(port)
+                self._check_port_for_teleinfo(port)
             )
             if success:
                 self.comment(
@@ -195,6 +87,19 @@ class DiscoveryCommand(BaseCommand):
 
         if not success:
             self.line("All com ports scanned. No port with teleinfo found.")
+
+
+async def _discard_potentially_incomplete_first_frame(port: str, timeout):
+    return await asyncio.wait_for(async_receive_frame(port), timeout=timeout)
+
+
+async def _extract_frame_to_print(port, raw_flag, timeout):
+    frame_to_print = await asyncio.wait_for(async_receive_frame(port), timeout=timeout)
+    if raw_flag:
+        frame_to_print = f"{frame_to_print}"
+    else:
+        frame_to_print = json.dumps(decode(frame_to_print))
+    return frame_to_print
 
 
 async def async_receive_frame(port: str):

@@ -10,10 +10,10 @@ from teleinfo.const import ENCODING, ETX
 
 
 @pytest.mark.asyncio
-async def test_receive_and_decode_teleinfo(slave_name, valid_frame_json):
+async def test_receive_and_decode_teleinfo(slave, valid_frame_json):
     # test whether the app correctly adds contract number to
     # Given I receive a valid frame
-    frame = await receive_frame(slave_name)
+    frame = await receive_frame(slave)
 
     # When I decode the frame
     frame_json = decode(frame)
