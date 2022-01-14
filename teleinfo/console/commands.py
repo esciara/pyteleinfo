@@ -4,11 +4,12 @@ import json
 import serial
 from cleo import Command
 
-from .utils import _list_ports
-from ..exceptions import TeleinfoError
-from ..codec import decode
-from ..const import ETX, ENCODING
 from teleinfo import serial_asyncio
+
+from ..codec import decode
+from ..const import ENCODING, ETX
+from ..exceptions import TeleinfoError
+from .utils import _list_ports
 
 
 class BaseCommand(Command):
@@ -73,7 +74,7 @@ class DiscoveryCommand(BaseCommand):
         self.info("Looking for serial ports...")
         ports = _list_ports()
         self.line(f"List of ports found: {ports}")
-        self.line(f"Checking port until a teleinfo port is found...")
+        self.line("Checking port until a teleinfo port is found...")
         success = False
         for port in ports:
             success = asyncio.get_event_loop().run_until_complete(

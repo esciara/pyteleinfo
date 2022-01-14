@@ -1,9 +1,10 @@
 # pylint: disable=missing-docstring
-import threading
 import os
 import pty
+import threading
 
 import pytest
+import pytest_asyncio
 
 from teleinfo.codec import encode_info_group
 from teleinfo.const import CHECKSUM, DATA, ETX, LABEL, STX
@@ -68,17 +69,17 @@ def _build_frame(data: list):
     return frame
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def valid_frame():
     yield VALID_FRAME
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def valid_frame_data():
     yield VALID_FRAME_DATA
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def valid_frame_json():
     yield VALID_FRAME_JSON
 
