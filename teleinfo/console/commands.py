@@ -2,14 +2,13 @@ import asyncio
 import json
 
 import serial
+import serial_asyncio
 from cleo import Command
-
-from teleinfo import serial_asyncio
+from serial.tools import list_ports
 
 from ..codec import decode
 from ..const import ENCODING, ETX
 from ..exceptions import TeleinfoError
-from .utils import _list_ports
 
 
 class BaseCommand(Command):
@@ -72,7 +71,8 @@ class DiscoveryCommand(BaseCommand):
 
     def handle(self):
         self.info("Looking for serial ports...")
-        ports = _list_ports()
+        ports_found = list_ports.comports()
+        ports = [port.device for port in ports_found]
         self.line(f"List of ports found: {ports}")
         self.line("Checking port until a teleinfo port is found...")
         success = False
