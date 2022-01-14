@@ -102,7 +102,7 @@ include_trailing_comma = true
 use_parentheses = true
 force_grid_wrap = 0
 line_length = 88
-known_third_party = ["cleo", "hamcrest", "pytest", "pytest_asyncio", "serial", "sphinx_rtd_theme"]
+known_third_party = ["cleo", "hamcrest", "pytest", "pytest_asyncio", "serial", "serial_asyncio", "sphinx_rtd_theme"]
 
 [tool.black]
 line-length = 88
