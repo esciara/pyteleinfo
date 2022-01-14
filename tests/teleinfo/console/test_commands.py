@@ -1,5 +1,5 @@
 from cleo import CommandTester
-from hamcrest import *
+from hamcrest import assert_that, contains_string
 
 from teleinfo.console import Application
 

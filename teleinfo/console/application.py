@@ -2,7 +2,7 @@ from cleo import Application as BaseApplication
 
 from teleinfo import __version__
 
-from .commands import PortCommand, DiscoveryCommand
+from .commands import DiscoveryCommand, PortCommand
 
 
 class Application(BaseApplication):

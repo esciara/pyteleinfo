@@ -112,9 +112,9 @@ def encode_info_group(label: str, data: str, sep: str = SP) -> str:
 
 
 def decode_info_group(
-    encoded_info_group: str,
-    verify_well_formed: bool = True,
-    verify_checksum: bool = True,
+        encoded_info_group: str,
+        verify_well_formed: bool = True,
+        verify_checksum: bool = True,
 ) -> (str, str):
     """
     Decodes info group from string format to extract label and data.
@@ -194,7 +194,7 @@ def _extract_info_groups_positions(frame: str) -> (dict, dict):
 
 def _extract_info_groups(frame: str) -> list:
     beginnings, ends = _extract_info_groups_positions(frame)
-    return [frame[i : j + 1] for (i, j) in zip(beginnings, ends)]
+    return [frame[i: j + 1] for (i, j) in zip(beginnings, ends)]
 
 
 def _verify_frame_list_well_formed(frame: list):
