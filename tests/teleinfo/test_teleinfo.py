@@ -4,7 +4,7 @@ import pytest
 import serial
 from hamcrest import assert_that, equal_to
 
-from teleinfo import serial_asyncio
+import serial_asyncio
 from teleinfo.codec import decode
 from teleinfo.const import ENCODING, ETX
 
