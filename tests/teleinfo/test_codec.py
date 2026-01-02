@@ -17,7 +17,16 @@ from teleinfo.codec import (
     encode,
     encode_info_group,
 )
-from teleinfo.const import CR_TOKEN, DATA_KEY, ETX_TOKEN, HT_TOKEN, LABEL_KEY, LF_TOKEN, SP_TOKEN, STX_TOKEN
+from teleinfo.const import (
+    CR_TOKEN,
+    DATA_KEY,
+    ETX_TOKEN,
+    HT_TOKEN,
+    LABEL_KEY,
+    LF_TOKEN,
+    SP_TOKEN,
+    STX_TOKEN,
+)
 from teleinfo.exceptions import (
     BaseFormatError,
     ChecksumError,
@@ -62,9 +71,7 @@ def test_encode_info_group_passes():
     result = encode_info_group(label, data)
 
     # Then I should obtain the following encoding
-    expected = INFO_GROUP_TEMPLATE.format(
-        LF=LF_TOKEN, label=label, SEP=SP_TOKEN, data=data, checksum="2", CR=CR_TOKEN
-    )
+    expected = INFO_GROUP_TEMPLATE.format(LF=LF_TOKEN, label=label, SEP=SP_TOKEN, data=data, checksum="2", CR=CR_TOKEN)
     assert_that(result, equal_to(expected), "Info Group not encoded as expected")
 
 
@@ -91,12 +98,8 @@ def test_decode_frame_as_list_passes():
         INFO_GROUP_TEMPLATE.format(
             LF=LF_TOKEN, label="ADCO", SEP=SP_TOKEN, data="050022120078", checksum="2", CR=CR_TOKEN
         ),
-        INFO_GROUP_TEMPLATE.format(
-            LF=LF_TOKEN, label="OPTARIF", SEP=SP_TOKEN, data="HC..", checksum="<", CR=CR_TOKEN
-        ),
-        INFO_GROUP_TEMPLATE.format(
-            LF=LF_TOKEN, label="ISOUSC", SEP=SP_TOKEN, data="45", checksum="?", CR=CR_TOKEN
-        ),
+        INFO_GROUP_TEMPLATE.format(LF=LF_TOKEN, label="OPTARIF", SEP=SP_TOKEN, data="HC..", checksum="<", CR=CR_TOKEN),
+        INFO_GROUP_TEMPLATE.format(LF=LF_TOKEN, label="ISOUSC", SEP=SP_TOKEN, data="45", checksum="?", CR=CR_TOKEN),
         ETX_TOKEN,
     ]
 
@@ -122,9 +125,7 @@ def test_decode_info_group_passes():
     )
 
     # When I decode this group
-    result = decode_info_group(
-        encoded_info_group, verify_well_formed=False, verify_checksum=False
-    )
+    result = decode_info_group(encoded_info_group, verify_well_formed=False, verify_checksum=False)
 
     # Then I should obtain the following decoded label and data
     expected = (label, data)
@@ -135,9 +136,7 @@ def test_extract_label_and_data_where_data_without_separator_chars():
     # Given the following encoded label, data and separators core
     label = "ADCO"
     data = "524563565245"
-    label_data_and_separators = LABEL_DATA_SEP_TEMPLATE.format(
-        label=label, SEP=SP_TOKEN, data=data
-    )
+    label_data_and_separators = LABEL_DATA_SEP_TEMPLATE.format(label=label, SEP=SP_TOKEN, data=data)
 
     # When I extract the label and data
     result = _extract_label_and_data(label_data_and_separators)
@@ -152,12 +151,8 @@ def test_extract_label_and_data_where_data_contains_separator_chars():
     label = "ADCO"
     data_left = "524563"
     data_right = "565245"
-    data = "{data_left}{SEP}{data_right}".format(
-        data_left=data_left, SEP=SP_TOKEN, data_right=data_right
-    )
-    label_data_and_separators = LABEL_DATA_SEP_TEMPLATE.format(
-        label=label, SEP=SP_TOKEN, data=data
-    )
+    data = "{data_left}{SEP}{data_right}".format(data_left=data_left, SEP=SP_TOKEN, data_right=data_right)
+    label_data_and_separators = LABEL_DATA_SEP_TEMPLATE.format(label=label, SEP=SP_TOKEN, data=data)
 
     # When I extract the label and data
     result = _extract_label_and_data(label_data_and_separators)
@@ -171,9 +166,7 @@ def test_verify_checksum_method_1():
     # Given the following encoded label, data and separators core
     label = "ADCO"
     data = "050022120078"
-    label_data_and_separators = LABEL_DATA_SEP_TEMPLATE.format(
-        label=label, SEP=SP_TOKEN, data=data
-    )
+    label_data_and_separators = LABEL_DATA_SEP_TEMPLATE.format(label=label, SEP=SP_TOKEN, data=data)
 
     # And the following checksum
     checksum = "2"
@@ -191,9 +184,7 @@ def test_verify_checksum_method_2():
     # Given the following encoded label, data and separators core
     label = "ADCO"
     data = "050022120078"
-    label_data_and_separators = LABEL_DATA_SEP_TEMPLATE.format(
-        label=label, SEP=SP_TOKEN, data=data
-    )
+    label_data_and_separators = LABEL_DATA_SEP_TEMPLATE.format(label=label, SEP=SP_TOKEN, data=data)
 
     # And the following checksum
     checksum = "R"
@@ -211,9 +202,7 @@ def test_verify_checksum_raises_exception_on_incorrect_checksum():
     # Given the following encoded label, data and separators core
     label = "ADCO"
     data = "050022120078"
-    label_data_and_separators = LABEL_DATA_SEP_TEMPLATE.format(
-        label=label, SEP=SP_TOKEN, data=data
-    )
+    label_data_and_separators = LABEL_DATA_SEP_TEMPLATE.format(label=label, SEP=SP_TOKEN, data=data)
 
     # And the following checksum
     checksum = "x"
@@ -238,9 +227,7 @@ def test_verify_frame_well_formed():
             INFO_GROUP_TEMPLATE.format(
                 LF=LF_TOKEN, label="OPTARIF", SEP=SP_TOKEN, data="HC..", checksum="<", CR=CR_TOKEN
             ),
-            INFO_GROUP_TEMPLATE.format(
-                LF=LF_TOKEN, label="ISOUSC", SEP=SP_TOKEN, data="45", checksum="?", CR=CR_TOKEN
-            ),
+            INFO_GROUP_TEMPLATE.format(LF=LF_TOKEN, label="ISOUSC", SEP=SP_TOKEN, data="45", checksum="?", CR=CR_TOKEN),
             ETX_TOKEN,
         ]
     )
@@ -265,9 +252,7 @@ def test_verify_frame_well_formed_raises_exception_on_incorrect_first_char():
             INFO_GROUP_TEMPLATE.format(
                 LF=LF_TOKEN, label="OPTARIF", SEP=SP_TOKEN, data="HC..", checksum="<", CR=CR_TOKEN
             ),
-            INFO_GROUP_TEMPLATE.format(
-                LF=LF_TOKEN, label="ISOUSC", SEP=SP_TOKEN, data="45", checksum="?", CR=CR_TOKEN
-            ),
+            INFO_GROUP_TEMPLATE.format(LF=LF_TOKEN, label="ISOUSC", SEP=SP_TOKEN, data="45", checksum="?", CR=CR_TOKEN),
             ETX_TOKEN,
         ]
     )
@@ -292,9 +277,7 @@ def test_verify_frame_well_formed_raises_exception_on_incorrect_last_char():
             INFO_GROUP_TEMPLATE.format(
                 LF=LF_TOKEN, label="OPTARIF", SEP=SP_TOKEN, data="HC..", checksum="<", CR=CR_TOKEN
             ),
-            INFO_GROUP_TEMPLATE.format(
-                LF=LF_TOKEN, label="ISOUSC", SEP=SP_TOKEN, data="45", checksum="?", CR=CR_TOKEN
-            ),
+            INFO_GROUP_TEMPLATE.format(LF=LF_TOKEN, label="ISOUSC", SEP=SP_TOKEN, data="45", checksum="?", CR=CR_TOKEN),
             LF_TOKEN,
         ]
     )
@@ -319,9 +302,7 @@ def test_verify_frame_well_formed_raises_exception_on_missing_cr_or_lf():
             INFO_GROUP_TEMPLATE.format(
                 LF=LF_TOKEN, label="OPTARIF", SEP=SP_TOKEN, data="HC..", checksum="<", CR=CR_TOKEN
             ),
-            INFO_GROUP_TEMPLATE.format(
-                LF=LF_TOKEN, label="ISOUSC", SEP=SP_TOKEN, data="45", checksum="?", CR=CR_TOKEN
-            ),
+            INFO_GROUP_TEMPLATE.format(LF=LF_TOKEN, label="ISOUSC", SEP=SP_TOKEN, data="45", checksum="?", CR=CR_TOKEN),
             ETX_TOKEN,
         ]
     )
@@ -353,9 +334,7 @@ def test_verify_frame_well_formed_raises_exception_on_cr_before_lf():
             INFO_GROUP_TEMPLATE.format(
                 LF=LF_TOKEN, label="OPTARIF", SEP=SP_TOKEN, data="HC..", checksum="<", CR=CR_TOKEN
             ),
-            INFO_GROUP_TEMPLATE.format(
-                LF=LF_TOKEN, label="ISOUSC", SEP=SP_TOKEN, data="45", checksum="?", CR=CR_TOKEN
-            ),
+            INFO_GROUP_TEMPLATE.format(LF=LF_TOKEN, label="ISOUSC", SEP=SP_TOKEN, data="45", checksum="?", CR=CR_TOKEN),
             ETX_TOKEN,
         ]
     )
@@ -368,8 +347,7 @@ def test_verify_frame_well_formed_raises_exception_on_cr_before_lf():
         calling(_verify_frame_well_formed).with_args(frame),
         raises(
             FrameFormatError,
-            r"\bShould always have a LF followed by a CR to delimit info groups, "
-            r"but some where inverted\b",
+            r"\bShould always have a LF followed by a CR to delimit info groups, " r"but some where inverted\b",
         ),
         "Frame format should have been verified as correct",
     )
@@ -383,9 +361,7 @@ def test_extract_info_groups():
     group2 = INFO_GROUP_TEMPLATE.format(
         LF=LF_TOKEN, label="OPTARIF", SEP=SP_TOKEN, data="HC..", checksum="<", CR=CR_TOKEN
     )
-    group3 = INFO_GROUP_TEMPLATE.format(
-        LF=LF_TOKEN, label="ISOUSC", SEP=SP_TOKEN, data="45", checksum="?", CR=CR_TOKEN
-    )
+    group3 = INFO_GROUP_TEMPLATE.format(LF=LF_TOKEN, label="ISOUSC", SEP=SP_TOKEN, data="45", checksum="?", CR=CR_TOKEN)
     frame = "".join([STX_TOKEN, group1, group2, group3, ETX_TOKEN])
 
     # When I extract the info groups
@@ -407,9 +383,7 @@ def test_extract_info_groups_positions():
             INFO_GROUP_TEMPLATE.format(
                 LF=LF_TOKEN, label="OPTARIF", SEP=SP_TOKEN, data="HC..", checksum="<", CR=CR_TOKEN
             ),
-            INFO_GROUP_TEMPLATE.format(
-                LF=LF_TOKEN, label="ISOUSC", SEP=SP_TOKEN, data="45", checksum="?", CR=CR_TOKEN
-            ),
+            INFO_GROUP_TEMPLATE.format(LF=LF_TOKEN, label="ISOUSC", SEP=SP_TOKEN, data="45", checksum="?", CR=CR_TOKEN),
             ETX_TOKEN,
         ]
     )
@@ -429,12 +403,8 @@ def test_verify_frame_list_well_formed():
         INFO_GROUP_TEMPLATE.format(
             LF=LF_TOKEN, label="ADCO", SEP=SP_TOKEN, data="050022120078", checksum="2", CR=CR_TOKEN
         ),
-        INFO_GROUP_TEMPLATE.format(
-            LF=LF_TOKEN, label="OPTARIF", SEP=SP_TOKEN, data="HC..", checksum="<", CR=CR_TOKEN
-        ),
-        INFO_GROUP_TEMPLATE.format(
-            LF=LF_TOKEN, label="ISOUSC", SEP=SP_TOKEN, data="45", checksum="?", CR=CR_TOKEN
-        ),
+        INFO_GROUP_TEMPLATE.format(LF=LF_TOKEN, label="OPTARIF", SEP=SP_TOKEN, data="HC..", checksum="<", CR=CR_TOKEN),
+        INFO_GROUP_TEMPLATE.format(LF=LF_TOKEN, label="ISOUSC", SEP=SP_TOKEN, data="45", checksum="?", CR=CR_TOKEN),
         ETX_TOKEN,
     ]
 
@@ -454,12 +424,8 @@ def test_verify_frame_list_well_formed_raises_exception_on_incorrect_first_char(
         INFO_GROUP_TEMPLATE.format(
             LF=LF_TOKEN, label="ADCO", SEP=SP_TOKEN, data="050022120078", checksum="2", CR=CR_TOKEN
         ),
-        INFO_GROUP_TEMPLATE.format(
-            LF=LF_TOKEN, label="OPTARIF", SEP=SP_TOKEN, data="HC..", checksum="<", CR=CR_TOKEN
-        ),
-        INFO_GROUP_TEMPLATE.format(
-            LF=LF_TOKEN, label="ISOUSC", SEP=SP_TOKEN, data="45", checksum="?", CR=CR_TOKEN
-        ),
+        INFO_GROUP_TEMPLATE.format(LF=LF_TOKEN, label="OPTARIF", SEP=SP_TOKEN, data="HC..", checksum="<", CR=CR_TOKEN),
+        INFO_GROUP_TEMPLATE.format(LF=LF_TOKEN, label="ISOUSC", SEP=SP_TOKEN, data="45", checksum="?", CR=CR_TOKEN),
         ETX_TOKEN,
     ]
 
@@ -479,12 +445,8 @@ def test_verify_frame_list_well_formed_raises_exception_on_incorrect_last_char()
         INFO_GROUP_TEMPLATE.format(
             LF=LF_TOKEN, label="ADCO", SEP=SP_TOKEN, data="050022120078", checksum="2", CR=CR_TOKEN
         ),
-        INFO_GROUP_TEMPLATE.format(
-            LF=LF_TOKEN, label="OPTARIF", SEP=SP_TOKEN, data="HC..", checksum="<", CR=CR_TOKEN
-        ),
-        INFO_GROUP_TEMPLATE.format(
-            LF=LF_TOKEN, label="ISOUSC", SEP=SP_TOKEN, data="45", checksum="?", CR=CR_TOKEN
-        ),
+        INFO_GROUP_TEMPLATE.format(LF=LF_TOKEN, label="OPTARIF", SEP=SP_TOKEN, data="HC..", checksum="<", CR=CR_TOKEN),
+        INFO_GROUP_TEMPLATE.format(LF=LF_TOKEN, label="ISOUSC", SEP=SP_TOKEN, data="45", checksum="?", CR=CR_TOKEN),
         LF_TOKEN,
     ]
 
@@ -565,9 +527,7 @@ def test_verify_info_group_well_formed_raises_exception_on_separator_mix():
     # Then it raise an exception
     assert_that(
         calling(_verify_info_group_well_formed).with_args(encoded_info_group),
-        raises(
-            InfoGroupFormatError, r"\bShould not contain both CR and HT separators\b"
-        ),
+        raises(InfoGroupFormatError, r"\bShould not contain both CR and HT separators\b"),
         "Info Group Format should have been verified as correct",
     )
 

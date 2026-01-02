@@ -17,14 +17,9 @@ class BaseCommand(Command):
     Teleinfo Base Command
     """
 
-    async def _check_port_for_teleinfo(
-        self, port, raw_flag=False, max_frames=3, timeout=5.0
-    ):
+    async def _check_port_for_teleinfo(self, port, raw_flag=False, max_frames=3, timeout=5.0):
         success = True
-        self.info(
-            f"Trying to read port '{port}' for {timeout} secs... "
-            f"Will print a max of {max_frames} frames..."
-        )
+        self.info(f"Trying to read port '{port}' for {timeout} secs... Will print a max of {max_frames} frames...")
         try:
             await _discard_potentially_incomplete_first_frame(port, timeout)
             for _ in range(max_frames):
@@ -43,8 +38,7 @@ class BaseCommand(Command):
         return success
 
     @abstractmethod
-    def handle(self):
-        ...
+    def handle(self): ...
 
 
 class PortCommand(BaseCommand):
@@ -82,13 +76,9 @@ class DiscoveryCommand(BaseCommand):
         self.line("Checking port until a teleinfo port is found...")
         success = False
         for port in ports:
-            success = asyncio.get_event_loop().run_until_complete(
-                self._check_port_for_teleinfo(port)
-            )
+            success = asyncio.get_event_loop().run_until_complete(self._check_port_for_teleinfo(port))
             if success:
-                self.comment(
-                    f"Port {port} receives valid teleinfo frames! Search " f"stopped."
-                )
+                self.comment(f"Port {port} receives valid teleinfo frames! Search stopped.")
                 break
 
         if not success:

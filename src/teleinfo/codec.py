@@ -7,8 +7,8 @@ It also can accept bytes for decoding:
     json_frame = {
         "ADCO": "050022120078",
         "OPTARIF": "HC..",
-    #   ...
-        }
+        #   ...
+    }
 
     #     <=>
 
@@ -16,7 +16,7 @@ It also can accept bytes for decoding:
         "\\x02"
         "\\nADCO 050022120078 2\\r"
         "\\nOPTARIF HC.. <\\r"
-    #   ...
+        #   ...
     )
 
 This is an implementation of the
@@ -36,7 +36,17 @@ Definitions:
 import re
 from typing import List, Tuple
 
-from teleinfo.const import CR_TOKEN, DATA_KEY, ENCODING, ETX_TOKEN, HT_TOKEN, LABEL_KEY, LF_TOKEN, SP_TOKEN, STX_TOKEN
+from teleinfo.const import (
+    CR_TOKEN,
+    DATA_KEY,
+    ENCODING,
+    ETX_TOKEN,
+    HT_TOKEN,
+    LABEL_KEY,
+    LF_TOKEN,
+    SP_TOKEN,
+    STX_TOKEN,
+)
 from teleinfo.exceptions import ChecksumError, FrameFormatError, InfoGroupFormatError
 
 
@@ -48,10 +58,7 @@ def encode(info_groups: dict) -> str:
     :return: teleinfo data string
     """
     encoded_info_groups = "".join(
-        [
-            encode_info_group(info_group[LABEL_KEY], info_group[DATA_KEY])
-            for info_group in info_groups
-        ]
+        [encode_info_group(info_group[LABEL_KEY], info_group[DATA_KEY]) for info_group in info_groups]
     )
     return f"{STX_TOKEN}{encoded_info_groups}{ETX_TOKEN}"
 
@@ -195,9 +202,7 @@ def _extract_info_groups_positions(frame: str) -> Tuple[List[int], List[int]]:
 
 def _extract_info_groups(frame: str) -> list:
     beginnings, ends = _extract_info_groups_positions(frame)
-    info_groups = [
-        frame[beginning : end + 1] for (beginning, end) in zip(beginnings, ends)
-    ]
+    info_groups = [frame[beginning : end + 1] for (beginning, end) in zip(beginnings, ends)]
     return info_groups
 
 
@@ -279,9 +284,7 @@ def _verify_checksum(label_data_and_separators: str, checksum: str):
     checksum_1 = _checksum_method_1(label_data_and_separators)
     checksum_2 = _checksum_method_2(label_data_and_separators)
     if checksum not in (checksum_1, checksum_2):
-        raise ChecksumError(
-            label_data_and_separators, [checksum, checksum_1, checksum_2]
-        )
+        raise ChecksumError(label_data_and_separators, [checksum, checksum_1, checksum_2])
 
 
 def _checksum_method_1(label_data_and_separators: str) -> str:

@@ -1,6 +1,7 @@
 """
 All package specific exceptions
 """
+
 from typing import Optional
 
 
@@ -15,9 +16,7 @@ class TeleinfoDecodingError(TeleinfoError):
 class BaseFormatError(TeleinfoDecodingError):
     """The format of a frame is invalid"""
 
-    def __init__(
-        self, string_verified, object_type_verified: str, errors: Optional[str] = None
-    ):
+    def __init__(self, string_verified, object_type_verified: str, errors: Optional[str] = None):
         if isinstance(string_verified, str):
             string_verified = string_verified.encode()
         msg = f"{object_type_verified} format verified for: '{string_verified}'"
@@ -30,18 +29,14 @@ class FrameFormatError(BaseFormatError):
     """The format of a frame is invalid"""
 
     def __init__(self, frame, errors: Optional[str] = None):
-        super().__init__(
-            string_verified=frame, object_type_verified="Frame", errors=errors
-        )
+        super().__init__(string_verified=frame, object_type_verified="Frame", errors=errors)
 
 
 class InfoGroupFormatError(BaseFormatError):
     """The format of a group of information within a frame is invalid"""
 
     def __init__(self, info_group: str, errors: Optional[str] = None):
-        super().__init__(
-            string_verified=info_group, object_type_verified="Info group", errors=errors
-        )
+        super().__init__(string_verified=info_group, object_type_verified="Info group", errors=errors)
 
 
 class ChecksumError(TeleinfoDecodingError):

@@ -2,12 +2,14 @@
 # SPHINX CONFIGURATION: teleinfo documentation build configuration file
 # =============================================================================
 """
-    isort:skip_file
-    pylint: skip-file
+isort:skip_file
+pylint: skip-file
 """
+
+import importlib
 import os.path
 import sys
-import importlib
+
 
 # -- ENSURE: Local workspace is used (for sphinx apidocs).
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -103,6 +105,7 @@ copyright = "2019, %s" % authors
 #
 # The short X.Y version.
 from teleinfo import __version__  # noqa: E402
+
 
 version = __version__
 # The full version, including alpha/beta/rc tags.
@@ -263,9 +266,7 @@ latex_elements = {
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
-latex_documents = [
-    ("index", "teleinfo.tex", "teleinfo Documentation", authors, "manual")
-]
+latex_documents = [("index", "teleinfo.tex", "teleinfo Documentation", authors, "manual")]
 
 # latex_logo = None
 
