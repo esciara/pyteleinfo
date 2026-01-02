@@ -55,6 +55,7 @@ dev = [
     "types-python-slugify>=5.0",
     "isort>=5.0",
     "black>=22.10",
+    "ruff>=0.8.0",
     "sphinx>=4.2",
     "sphinx-autodoc-typehints>=1.10",
     "sphinx-autobuild>=2021.0",
@@ -85,17 +86,35 @@ disable = "C0114, C0116, wrong-import-order, missing-class-docstring, W1203, W05
 ignore = "tests"
 
 [tool.pylint.format]
-max-line-length = "88"
+max-line-length = "120"
 
 
 [tool.isort]
 # following black's doc for compatibility
 # See https://black.readthedocs.io/en/stable/guides/using_black_with_other_tools.html#isort
 profile = "black"
+line_length = 120
 
 
 [tool.black]
 target_version = ["py312"]
+line-length = 120
+
+[tool.ruff]
+# Target Python 3.12+
+target-version = "py312"
+line-length = 120
+
+[tool.ruff.lint]
+# Enable isort rules for import sorting
+select = ["I"]
+
+[tool.ruff.lint.isort]
+# Configure import sorting to match isort's black profile
+force-single-line = false
+force-sort-within-sections = false
+lines-after-imports = 2
+known-first-party = ["teleinfo"]
 
 
 [tool.uv.sources]

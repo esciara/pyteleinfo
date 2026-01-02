@@ -101,24 +101,20 @@ tox-lint:
 
 # Formatting targets
 [group('quality')]
-seed-isort:
-    uv run seed-isort-config
+ruff-format:
+    uv run ruff format src/{{package_dir}} tests
 
 [group('quality')]
-isort:
-    uv run isort --profile black {{package_dir}} tests
+ruff-check:
+    uv run ruff check --select I --fix src/{{package_dir}} tests
 
 [group('quality')]
-black:
-    uv run black {{package_dir}} tests
-
-[group('quality')]
-format: seed-isort isort black
+format: ruff-check ruff-format
 
 [group('quality')]
 format-check:
-    uv run isort -c --profile black {{package_dir}} tests
-    uv run black --check {{package_dir}} tests
+    uv run ruff check --select I src/{{package_dir}} tests
+    uv run ruff format --check src/{{package_dir}} tests
 
 [group('quality')]
 tox-format:
