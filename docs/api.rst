@@ -12,6 +12,3 @@ teleinfo.exceptions
 
 .. automodule:: teleinfo.exceptions
    :members:
-
-
-

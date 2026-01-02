@@ -436,7 +436,7 @@ tasks = [
     Task("Research database schema", db_research_prompt),
     Task("Find API patterns", api_research_prompt),
     Task("Investigate UI components", ui_research_prompt),
-    Task("Check test patterns", test_research_prompt)
+    Task("Check test patterns", test_research_prompt),
 ]
 ```
 
