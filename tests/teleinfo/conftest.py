@@ -9,6 +9,7 @@ import pytest_asyncio
 from teleinfo.codec import encode_info_group
 from teleinfo.const import CHECKSUM_KEY, DATA_KEY, ETX_TOKEN, LABEL_KEY, STX_TOKEN
 
+
 VALID_FRAME_DATA = [
     {LABEL_KEY: "ADCO", DATA_KEY: "050022120078", CHECKSUM_KEY: "2"},
     {LABEL_KEY: "OPTARIF", DATA_KEY: "HC..", CHECKSUM_KEY: "<"},

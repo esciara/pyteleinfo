@@ -34,6 +34,7 @@ from teleinfo.exceptions import (
     InfoGroupFormatError,
 )
 
+
 LABEL_DATA_SEP_TEMPLATE = "{label}{SEP}{data}{SEP}"
 
 INFO_GROUP_TEMPLATE = "{LF}" + LABEL_DATA_SEP_TEMPLATE + "{checksum}{CR}"
