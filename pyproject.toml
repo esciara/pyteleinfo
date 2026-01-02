@@ -9,7 +9,7 @@ authors = [
     {name = "Emmanuel Sciara", email = "emmanuel.sciara@gmail.com"}
 ]
 readme = "README.rst"
-requires-python = ">=3.8"
+requires-python = ">=3.12"
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
     "Intended Audience :: End Users/Desktop",
@@ -19,10 +19,8 @@ classifiers = [
     "Operating System :: MacOS :: MacOS X",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Communications",
     "Topic :: Software Development :: Libraries",
     "Topic :: Software Development :: Libraries :: Python Modules",
@@ -33,7 +31,6 @@ dependencies = [
     "pyserial>=3.5",
     "cleo>=0.8",
     "pyserial-asyncio>=0.6",
-    "invoke>=1.7.3",
 ]
 
 [project.optional-dependencies]
@@ -98,7 +95,7 @@ profile = "black"
 
 
 [tool.black]
-target_version = ["py39"]
+target_version = ["py312"]
 
 
 [tool.uv.sources]
