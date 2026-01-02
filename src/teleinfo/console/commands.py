@@ -1,5 +1,6 @@
 import asyncio
 import json
+from abc import abstractmethod
 
 import serial
 import serial_asyncio
@@ -7,7 +8,7 @@ from cleo import Command
 from serial.tools import list_ports
 
 from ..codec import decode
-from ..const import ENCODING, ETX
+from ..const import ENCODING, ETX_TOKEN
 from ..exceptions import TeleinfoError
 
 
@@ -26,13 +27,13 @@ class BaseCommand(Command):
         )
         try:
             await _discard_potentially_incomplete_first_frame(port, timeout)
-            for i in range(max_frames):
+            for _ in range(max_frames):
                 self.line(await _extract_frame_to_print(port, raw_flag, timeout))
-        except serial.SerialException as e:
-            self.line_error(f"<error>{e.__repr__()}</>")
+        except serial.SerialException as exception:
+            self.line_error(f"<error>{repr(exception)}</>")
             success = False
-        except TeleinfoError as e:
-            self.line_error(f"<error>{e.__repr__()}</>")
+        except TeleinfoError as exception:
+            self.line_error(f"<error>{repr(exception)}</>")
             success = False
         except asyncio.TimeoutError:
             self.comment("Timeout!")
@@ -40,6 +41,10 @@ class BaseCommand(Command):
         # Add a sleep so that output buffer can be flushed
         await asyncio.sleep(0)
         return success
+
+    @abstractmethod
+    def handle(self):
+        ...
 
 
 class PortCommand(BaseCommand):
@@ -113,4 +118,4 @@ async def async_receive_frame(port: str):
         rtscts=1,
     )
     # TODO make sure this stops after a timeout
-    return await slave_reader.readuntil(separator=ETX.encode(ENCODING))
+    return await slave_reader.readuntil(separator=ETX_TOKEN.encode(ENCODING))

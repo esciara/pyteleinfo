@@ -7,20 +7,20 @@ import pytest
 import pytest_asyncio
 
 from teleinfo.codec import encode_info_group
-from teleinfo.const import CHECKSUM, DATA, ETX, LABEL, STX
+from teleinfo.const import CHECKSUM_KEY, DATA_KEY, ETX_TOKEN, LABEL_KEY, STX_TOKEN
 
 VALID_FRAME_DATA = [
-    {LABEL: "ADCO", DATA: "050022120078", CHECKSUM: "2"},
-    {LABEL: "OPTARIF", DATA: "HC..", CHECKSUM: "<"},
-    {LABEL: "ISOUSC", DATA: "45", CHECKSUM: "?"},
-    {LABEL: "HCHC", DATA: "094939439", CHECKSUM: "8"},
-    {LABEL: "HCHP", DATA: "127970334", CHECKSUM: "7"},
-    {LABEL: "PTEC", DATA: "HP..", CHECKSUM: " "},
-    {LABEL: "IINST", DATA: "009", CHECKSUM: " "},
-    {LABEL: "IMAX", DATA: "049", CHECKSUM: "L"},
-    {LABEL: "PAPP", DATA: "02160", CHECKSUM: "*"},
-    {LABEL: "HHPHC", DATA: "E", CHECKSUM: "0"},
-    {LABEL: "MOTDETAT", DATA: "400000", CHECKSUM: "F"},
+    {LABEL_KEY: "ADCO", DATA_KEY: "050022120078", CHECKSUM_KEY: "2"},
+    {LABEL_KEY: "OPTARIF", DATA_KEY: "HC..", CHECKSUM_KEY: "<"},
+    {LABEL_KEY: "ISOUSC", DATA_KEY: "45", CHECKSUM_KEY: "?"},
+    {LABEL_KEY: "HCHC", DATA_KEY: "094939439", CHECKSUM_KEY: "8"},
+    {LABEL_KEY: "HCHP", DATA_KEY: "127970334", CHECKSUM_KEY: "7"},
+    {LABEL_KEY: "PTEC", DATA_KEY: "HP..", CHECKSUM_KEY: " "},
+    {LABEL_KEY: "IINST", DATA_KEY: "009", CHECKSUM_KEY: " "},
+    {LABEL_KEY: "IMAX", DATA_KEY: "049", CHECKSUM_KEY: "L"},
+    {LABEL_KEY: "PAPP", DATA_KEY: "02160", CHECKSUM_KEY: "*"},
+    {LABEL_KEY: "HHPHC", DATA_KEY: "E", CHECKSUM_KEY: "0"},
+    {LABEL_KEY: "MOTDETAT", DATA_KEY: "400000", CHECKSUM_KEY: "F"},
 ]
 
 VALID_FRAME = (
@@ -57,15 +57,15 @@ VALID_FRAME_JSON = {
 def _build_valid_frame_json(data: list):
     json_ = {}
     for item in data:
-        json_[item[LABEL]] = item[DATA]
+        json_[item[LABEL_KEY]] = item[DATA_KEY]
     return json_
 
 
 def _build_frame(data: list):
-    frame = STX
+    frame = STX_TOKEN
     for item in data:
-        frame = "".join([frame, encode_info_group(item[LABEL], item[DATA])])
-    frame = "".join([frame, ETX])
+        frame = "".join([frame, encode_info_group(item[LABEL_KEY], item[DATA_KEY])])
+    frame = "".join([frame, ETX_TOKEN])
     return frame
 
 

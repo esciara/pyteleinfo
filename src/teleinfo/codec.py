@@ -34,8 +34,9 @@ Definitions:
 """
 
 import re
+from typing import List, Tuple
 
-from teleinfo.const import CR, DATA, ENCODING, ETX, HT, LABEL, LF, SP, STX
+from teleinfo.const import CR_TOKEN, DATA_KEY, ENCODING, ETX_TOKEN, HT_TOKEN, LABEL_KEY, LF_TOKEN, SP_TOKEN, STX_TOKEN
 from teleinfo.exceptions import ChecksumError, FrameFormatError, InfoGroupFormatError
 
 
@@ -48,11 +49,11 @@ def encode(info_groups: dict) -> str:
     """
     encoded_info_groups = "".join(
         [
-            encode_info_group(info_group[LABEL], info_group[DATA])
+            encode_info_group(info_group[LABEL_KEY], info_group[DATA_KEY])
             for info_group in info_groups
         ]
     )
-    return f"{STX}{encoded_info_groups}{ETX}"
+    return f"{STX_TOKEN}{encoded_info_groups}{ETX_TOKEN}"
 
 
 def decode(frame, verify_well_formed: bool = True) -> dict:
@@ -97,7 +98,7 @@ def decode_from_list(frame_list: list, verify_well_formed: bool = True) -> dict:
     return decoded_frame
 
 
-def encode_info_group(label: str, data: str, sep: str = SP) -> str:
+def encode_info_group(label: str, data: str, sep: str = SP_TOKEN) -> str:
     """
     Encodes data of an info group into string format
 
@@ -108,14 +109,14 @@ def encode_info_group(label: str, data: str, sep: str = SP) -> str:
     """
     encoded_info_group = f"{label}{sep}{data}{sep}"
     checksum = _checksum_method_1(encoded_info_group)
-    return f"{LF}{encoded_info_group}{checksum}{CR}"
+    return f"{LF_TOKEN}{encoded_info_group}{checksum}{CR_TOKEN}"
 
 
 def decode_info_group(
     encoded_info_group: str,
     verify_well_formed: bool = True,
     verify_checksum: bool = True,
-) -> (str, str):
+) -> Tuple[str, str]:
     """
     Decodes info group from string format to extract label and data.
 
@@ -159,11 +160,11 @@ def _verify_frame_well_formed(frame: str):
     first_char, last_char = frame[:1], frame[-1:]
     beginnings, ends = _extract_info_groups_positions(frame)
 
-    if first_char != STX:
-        error = f"First char should be STX but is '{first_char.encode()}'"
+    if first_char != STX_TOKEN:
+        error = f"First char should be STX but is '{first_char.encode()!r}'"
         errors = _append_error(errors, error)
-    if last_char != ETX:
-        error = f"Last char should be ETX but is '{last_char.encode()}'"
+    if last_char != ETX_TOKEN:
+        error = f"Last char should be ETX but is '{last_char.encode()!r}'"
         errors = _append_error(errors, error)
     if len(beginnings) != len(ends):
         error = (
@@ -186,25 +187,28 @@ def _verify_frame_well_formed(frame: str):
         raise FrameFormatError(frame, errors)
 
 
-def _extract_info_groups_positions(frame: str) -> (dict, dict):
-    info_groups_beginnings = [m.start() for m in re.finditer(LF, frame)]
-    info_groups_ends = [m.start() for m in re.finditer(CR, frame)]
+def _extract_info_groups_positions(frame: str) -> Tuple[List[int], List[int]]:
+    info_groups_beginnings = [m.start() for m in re.finditer(LF_TOKEN, frame)]
+    info_groups_ends = [m.start() for m in re.finditer(CR_TOKEN, frame)]
     return info_groups_beginnings, info_groups_ends
 
 
 def _extract_info_groups(frame: str) -> list:
     beginnings, ends = _extract_info_groups_positions(frame)
-    return [frame[i : j + 1] for (i, j) in zip(beginnings, ends)]
+    info_groups = [
+        frame[beginning : end + 1] for (beginning, end) in zip(beginnings, ends)
+    ]
+    return info_groups
 
 
 def _verify_frame_list_well_formed(frame: list):
     errors = None
     first_char, last_char = frame[0], frame[-1]
 
-    if first_char != STX:
+    if first_char != STX_TOKEN:
         error = f"First char should be STX but is '{first_char}'"
         errors = _append_error(errors, error)
-    if last_char != ETX:
+    if last_char != ETX_TOKEN:
         error = f"Last char should be ETX but is '{last_char}'"
         errors = _append_error(errors, error)
     if errors is not None:
@@ -214,15 +218,15 @@ def _verify_frame_list_well_formed(frame: list):
 def _verify_info_group_well_formed(encoded_info_group: str):
     errors = None
     first_char, last_char = encoded_info_group[:1], encoded_info_group[-1:]
-    num_of_sp_sep = encoded_info_group.count(SP)
-    num_of_ht_sep = encoded_info_group.count(HT)
+    num_of_sp_sep = encoded_info_group.count(SP_TOKEN)
+    num_of_ht_sep = encoded_info_group.count(HT_TOKEN)
     num_of_sep = num_of_sp_sep + num_of_ht_sep
 
-    if first_char != LF:
-        error = f"First char should be LF but is '{first_char.encode()}'"
+    if first_char != LF_TOKEN:
+        error = f"First char should be LF but is '{first_char.encode()!r}'"
         errors = _append_error(errors, error)
-    if last_char != CR:
-        error = f"Last char should be CR but is '{first_char.encode()}'"
+    if last_char != CR_TOKEN:
+        error = f"Last char should be CR but is '{first_char.encode()!r}'"
         errors = _append_error(errors, error)
     if num_of_sp_sep > 0 and num_of_ht_sep > 0:
         error = "Should not contain both CR and HT separators"
@@ -234,7 +238,7 @@ def _verify_info_group_well_formed(encoded_info_group: str):
         raise InfoGroupFormatError(encoded_info_group, errors)
 
 
-def _extract_label_and_data(label_data_and_separators: str) -> (str, str):
+def _extract_label_and_data(label_data_and_separators: str) -> Tuple[str, str]:
     """
 
     :param label_data_and_separators: str
