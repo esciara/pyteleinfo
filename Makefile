@@ -90,14 +90,14 @@ help:
 #################################################################
 
 setup-dev-env-minimal: clean
-	poetry install -E format -E repl
+	uv sync
 
 setup-dev-env-full: clean
-	poetry install -E test -E bdd -E type -E format -E lint -E repl
+	uv sync --extra dev
 
 setup-dev-host:
 	./scripts/install_pyenv.sh
-	./scripts/install_poetry.sh
+	curl -LsSf https://astral.sh/uv/install.sh | sh
 	@echo "Host setup correctly. Restart your shell or source your shell config file to be up and running :)"
 
 setup-pre-commit-hooks:
@@ -115,22 +115,22 @@ setup-release-tools:
 #################################################################
 
 install-test-dependencies :
-	poetry install --no-dev --no-root -E test
+	uv sync --no-dev
 
 install-bdd-dependencies:
-	poetry install --no-dev -E bdd
+	uv sync --no-dev
 
 install-format-dependencies:
-	poetry install --no-dev --no-root -E format
+	uv sync --no-dev
 
 install-lint-dependencies:
-	poetry install --no-dev --no-root -E lint
+	uv sync --no-dev
 
 install-type-dependencies:
-	poetry install --no-dev --no-root -E type
+	uv sync --no-dev
 
 install-docs-dependencies:
-	poetry install --no-dev --no-root -E docs
+	uv sync --no-dev
 
 
 #################################################################
@@ -175,10 +175,7 @@ clean-test:
 	rm -fr htmlcov/
 
 clean-venv:
-	# poetry env remove might not to work if `virtualenvs.in-project = true`
-	# (see https://github.com/python-poetry/poetry/issues/2124)
-	# so if not, remove whole `.venv` directory using https://unix.stackexchange.com/questions/153763
-	poetry env remove $$(poetry env info -p)/bin/python && ([ $$? -eq 0 ]) || rm -rf $$(poetry env info -p)
+	rm -rf .venv
 
 
 #################################################################
@@ -186,87 +183,87 @@ clean-venv:
 #################################################################
 
 tox:
-	poetry run tox
+	uv run tox
 
 tox-p:
-	poetry run tox -p auto
+	uv run tox -p auto
 
 #################################################################
 # repl
 #################################################################
 
 repl:
-	poetry run bpython
+	uv run bpython
 
 #################################################################
 # linting
 #################################################################
 
 lint:
-	poetry run flake8 $(PACKAGE_DIR) tests
+	uv run flake8 $(PACKAGE_DIR) tests
 
 tox-lint:
-	poetry run tox -e lint
+	uv run tox -e lint
 
 #################################################################
 # formating
 #################################################################
 
 seed-isort:
-	poetry run seed-isort-config
+	uv run seed-isort-config
 
 isort:
-	poetry run isort --profile black $(PACKAGE_DIR) tests
+	uv run isort --profile black $(PACKAGE_DIR) tests
 
 black:
-	poetry run black $(PACKAGE_DIR) tests
+	uv run black $(PACKAGE_DIR) tests
 
 format: seed-isort isort black
 
 format-check:
-	poetry run isort -c --profile black $(PACKAGE_DIR) tests
-	poetry run black --check $(PACKAGE_DIR) tests
+	uv run isort -c --profile black $(PACKAGE_DIR) tests
+	uv run black --check $(PACKAGE_DIR) tests
 
 tox-format:
-	poetry run tox -e format
+	uv run tox -e format
 
 #################################################################
 # typing
 #################################################################
 
 type:
-	poetry run mypy -p $(PACKAGE_DIR) -p tests
+	uv run mypy -p $(PACKAGE_DIR) -p tests
 
 tox-type:
-	poetry run tox -e type
+	uv run tox -e type
 
 #################################################################
 # unit testing
 #################################################################
 
 test:
-	poetry run pytest --cov=$(PACKAGE_DIR) --cov-report=html --cov-report=term tests
+	uv run pytest --cov=$(PACKAGE_DIR) --cov-report=html --cov-report=term tests
 
 tox-test-default-version: tox-py
 tox-test: tox-py
 tox-py:
-	poetry run tox -e py
+	uv run tox -e py
 
 tox-test-py38: tox-py38
 tox-py38:
-	poetry run tox -e py38
+	uv run tox -e py38
 
 tox-test-py37: tox-py37
 tox-py37:
-	poetry run tox -e py37
+	uv run tox -e py37
 
 tox-test-py36: tox-py36
 tox-py36:
-	poetry run tox -e py36
+	uv run tox -e py36
 
 tox-test-all-versions: tox-test-all
 tox-test-all:
-	poetry run tox -e py38,py37,py36
+	uv run tox -e py38,py37,py36
 
 
 #################################################################
@@ -274,24 +271,24 @@ tox-test-all:
 #################################################################
 
 bdd:
-	poetry run behave features  --format=pretty --tags=~wip --tags=~skip
+	uv run behave features  --format=pretty --tags=~wip --tags=~skip
 
 tox-bdd-default-version: tox-bdd
 tox-bdd:
-	poetry run tox -e bdd
+	uv run tox -e bdd
 
 tox-bdd-py38:
-	poetry run tox -e bdd-py38
+	uv run tox -e bdd-py38
 
 tox-bdd-py37:
-	poetry run tox -e bdd-py37
+	uv run tox -e bdd-py37
 
 tox-bdd-py36:
-	poetry run tox -e bdd-py36
+	uv run tox -e bdd-py36
 
 tox-bdd-all-versions: tox-bdd-all
 tox-bdd-all:
-	poetry run tox -e bdd-py38,bdd-py37,bdd-py36
+	uv run tox -e bdd-py38,bdd-py37,bdd-py36
 
 #################################################################
 # coverage
@@ -309,7 +306,7 @@ tox-bdd-all:
 #################################################################
 
 docs:
-	poetry run sphinx-apidoc -o docs/ $(PACKAGE_DIR)
+	uv run sphinx-apidoc -o docs/ $(PACKAGE_DIR)
 	$(MAKE) -C docs clean
 	$(MAKE) -C docs html
 
@@ -317,11 +314,11 @@ docs-pdf:
 	$(MAKE) -C docs latexpdf
 
 tox-docs:
-	poetry run tox -e docs
+	uv run tox -e docs
 	$(BROWSER) docs/_build/html/index.html
 
 tox-docs-pdf:
-	poetry run tox -e docs-pdf
+	uv run tox -e docs-pdf
 
 # To use/adjust when we start using coverage. Encourage usage of tox.
 #servedocs: docs
@@ -348,9 +345,8 @@ cicd-release:
 #  - use regex to find first item instead of using ${1}
 bump:
 	$(call check_defined, NEW_VERSION)
-	poetry version $(NEW_VERSION)
-	poetry run pip install toml
-	poetry run python ./scripts/generate_version_file.py
+	uv run python -c "import tomli, tomli_w; f=open('pyproject.toml','rb'); d=tomli.load(f); f.close(); d['project']['version']='$(NEW_VERSION)'; f=open('pyproject.toml','wb'); tomli_w.dump(d,f); f.close()"
+	uv run python ./scripts/generate_version_file.py
 
 # To use/adjust when we start using coverage. Use Poetry.
 #dist: clean
@@ -359,15 +355,16 @@ bump:
 #	ls -l dist
 
 publish: clean
-	poetry run python scripts/verify_pypi_env_variables.py
-	[ -z $$PYPI_REPOSITORY_NAME ] || repo_arg="-r $$PYPI_REPOSITORY_NAME" && poetry publish --build $$repo_arg
+	uv run python scripts/verify_pypi_env_variables.py
+	uv build
+	[ -z $$PYPI_REPOSITORY_NAME ] || repo_arg="--publish-url $$PYPI_REPOSITORY_NAME" && uv publish $$repo_arg
 
 #################################################################
 # installing developed package/library
 #################################################################
 
 install: clean
-	poetry install --no-dev
+	uv sync --no-dev
 
 #################################################################
 # git targets

@@ -1,4 +1,4 @@
-from invoke import task, Result
+from invoke import task
 
 
 @task
@@ -28,12 +28,7 @@ def test(context):
 
 @task
 def venv(context):
-    result: Result = context.run("poetry env info -p")
-
-    if result.failed:
-        context.run("rm -fr .tox/")
-    else:
-        context.run("rm -rf $(poetry env info -p)")
+    context.run("rm -rf .venv")
 
 
 @task(build, pyc, test, venv)

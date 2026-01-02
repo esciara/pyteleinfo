@@ -2,7 +2,7 @@
 #   image: python:3.6-alpine
 #   script:
 #   - pip install -q distro
-#   - distro 
+#   - distro
 #   - distro -j
 #   - pip install -q -r py.requirements/ci.travis.txt
 #   - pip show setuptools
@@ -11,24 +11,22 @@
 #   - pytest tests
 
 #test-stretch:
-#  image: python:3.6-stretch
+#  image: python:3.8
 #  before_script:
 #    - python --version
-#    - pip3 install poetry
-#    - poetry config settings.virtualenvs.create false
-#    - poetry install
+#    - curl -LsSf https://astral.sh/uv/install.sh | sh
+#    - export PATH="$HOME/.cargo/bin:$PATH"
+#    - uv sync --extra dev
 #  script:
-#    - poetry run invoke lint
-#    - poetry run invoke test
+#    - uv run invoke lint
+#    - uv run invoke test
 #
 doc:
-  image: python:3.6-stretch
-#  image: python:3.6-alpine
+  image: python:3.8
   before_script:
-#    - apk add build-base
     - python --version
-    - pip3 install poetry
-    - poetry config settings.virtualenvs.create false
-    - poetry install
+    - curl -LsSf https://astral.sh/uv/install.sh | sh
+    - export PATH="$HOME/.cargo/bin:$PATH"
+    - uv sync --extra dev
   script:
-    - poetry run invoke docs
+    - uv run invoke docs
