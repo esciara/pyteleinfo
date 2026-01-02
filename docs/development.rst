@@ -59,8 +59,7 @@ Packages used for testing and qa:
 
 * ``pytest``
 * ``behave``
-* ``black``
-* ``isort``
+* ``ruff``
 * ``pyling``
 * ``flake8`` (with ``flake8-bugbear``)
 * ``coverage``
@@ -79,9 +78,7 @@ Pre-commit hooks
 Hooks used:
 
 * ``gitlint``
-* ``black``
-* ``blacken-docs``
-* ``isort``, helped wigth ``seed-isort-config``
+* ``ruff`` (for code formatting and import sorting)
 * some ``pre-commit`` packaged ``pre-commit-hooks``:
     * ``trailing-whitespace``
     * ``end-of-file-fixer``
@@ -118,9 +115,8 @@ Plugins I have added so far:
 * Toml
 * Ini
 * set up as external tools
-    * ``black``
+    * ``ruff``
     * ``pylint``
-    * ``isort``
 
 
 Main tools
@@ -149,9 +145,7 @@ Main tools
 +------------------+--------------------------------------------------------------+-----------------+
 | ``bump2version`` | updating version (together with committing and tag creation) |                 |
 +------------------+--------------------------------------------------------------+-----------------+
-| ``black``        | linging: enforcing conformity to PEP8 (-ish)                 |                 |
-+------------------+--------------------------------------------------------------+-----------------+
-| ``isort``        | sorting python imports                                       |                 |
+| ``ruff``         | code formatting and import sorting (replaces black & isort)  |                 |
 +------------------+--------------------------------------------------------------+-----------------+
 | ``pylint``       | linting (*usage planned*)                                    |                 |
 +------------------+--------------------------------------------------------------+-----------------+
@@ -179,13 +173,11 @@ Complementary tools
 | ``tox-virtualenv-no-download`` | disable virtualenv (>=14)'s downloading        |                 |
 |                                | behaviour when running through tox.            |                 |
 +--------------------------------+------------------------------------------------+-----------------+
-| ``flake8-bugbear``             | B950 to follow `black's recommendations        |                 |
-|                                | regarding line length handling by flake8`_     |                 |
+| ``flake8-bugbear``             | Additional flake8 checks, coordinated with     |                 |
+|                                | ruff formatting (B950 for line length)         |                 |
 +--------------------------------+------------------------------------------------+-----------------+
 |                                |                                                |                 |
 +--------------------------------+------------------------------------------------+-----------------+
-
-.. _black's recommendations regarding line length handling by flake8: https://black.readthedocs.io/en/stable/the_black_code_style.html#line-length
 
 Environment setup
 -----------------
@@ -331,7 +323,7 @@ Clone the project (or your fork of it) and move to the project directory::
 
     $ poetry install
 
-Install ``black``'s `pre-commit hook <https://black.readthedocs.io/en/stable/version_control_integration.html>`_::
+Install pre-commit hooks (includes ``ruff`` for code formatting and import sorting)::
 
     $ pre-commit install
 
@@ -353,9 +345,13 @@ Running tests::
 
     $ poetry run invoke test
 
-Running black::
+Running ruff format::
 
-    $ poetry run black .
+    $ poetry run ruff format .
+
+Running ruff import checks::
+
+    $ poetry run ruff check --select I .
 
 Running linting::
 
@@ -426,8 +422,7 @@ IDE integration
 
 * pylint integration (TODO: see
   https://medium.com/@wbrucek/how-i-integrated-pylint-into-my-pycharm-workflow-47047ce5e7fd ... plugin not working)
-* black integration (TODO: see
-  https://black.readthedocs.io/en/stable/editor_integration.html#pycharm-intellij-idea, or use plugin ?)
+* ruff integration (TODO: see https://docs.astral.sh/ruff/integrations/ for IDE integration options)
 
 How to contribute
 -----------------

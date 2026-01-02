@@ -89,7 +89,7 @@ repl:
 # Linting targets
 [group('quality')]
 lint:
-    uv run flake8 {{package_dir}} tests
+    uv run ruff check src/{{package_dir}} tests
 
 [group('quality')]
 pylint:
