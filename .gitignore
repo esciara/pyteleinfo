@@ -1,5 +1,8 @@
+reports
+
 # Visual Studio Code
 .vscode/
+.idea
 
 # Created by .ignore support plugin (hsz.mobi)
 ### Python template

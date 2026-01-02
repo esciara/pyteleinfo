@@ -3,11 +3,11 @@
 
 [tool.poetry]
 name = "pyteleinfo"
-version = "0.0.1"
+version = "0.0.0-dev"
 description = ""
 authors = ["Emmanuel Sciara <emmanuel.sciara@gmail.com>"]
 packages = [
-    { include = "teleinfo" },
+    { include = "**/*.py", from="src"},
 ]
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
@@ -18,8 +18,10 @@ classifiers = [
     'Operating System :: MacOS :: MacOS X',
     'Programming Language :: Python',
     'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.6',
-    'Programming Language :: Python :: 3.7',
+    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
     'Topic :: Communications',
     'Topic :: Software Development :: Libraries',
     'Topic :: Software Development :: Libraries :: Python Modules',
@@ -29,85 +31,75 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.8"
-
-# Optional dependencies to be part of `test` extra
-pytest = {version = "^6.1", optional = true}
-pytest-cov = {version = "^3.0", optional = true}
-pytest-mock = {version = "^3.2", optional = true}
-pytest-html = {version = "^3.1", optional = true}
-pytest-asyncio = {version = "^0", optional = true}
-# Optional dependencies to be part of `bdd` extra
-behave4git = {version = "^0", optional = true}
-PyHamcrest = {version = "^2.0", optional = true}
-# Optional dependencies to be part of `lint` extra
-flake8 = {version = "^4.0", optional = true}
-pydocstyle = {version = "^6.1", optional = true}
-pylint = {version = "^2.3", optional = true}
-yapf = {version = "^0", optional = true}
-# Optional dependencies to be part of `type` extra
-mypy = {version = "^0", optional = true}
-types-python-slugify = {version = "^5", optional = true}
-# Optional dependencies to be part of `format` extra
-isort = {version = "^5", optional = true}
-seed-isort-config = {version = "^2.2", optional = true}
-black = {version = "stable", optional = true, allow-prereleases = true}
-# Optional dependencies to be part of `docs` extra
-sphinx = {version = "^4.2", optional = true}
-sphinx-autodoc-typehints = {version = "^1.10", optional = true}
-sphinx-autobuild = {version = "^2021", optional = true}
-sphinx_rtd_theme = {version = "^0", optional = true}
-sphinx-bootstrap-theme = {version = "^0.8.0", optional = true}
-m2r = {version = "^0", optional = true}
-# Optional dependencies to be part of `repl` extra
-bpython = {version = "^0", optional = true}
-# Non optional dependendies
-#############################
-# Add you dependencies here #
-#############################
 pyserial = "^3.5"
 cleo = "^0"
 pyserial-asyncio = "^0.6"
+invoke = "^1.7.3"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 tox = "^3.14"
 tox-pyenv = "^1.1"
 rope = "^0"
-yapf = "^0.32.0"
+yapf ="^0"
 nest-asyncio = "^1.5.4"
-
-[tool.poetry.extras]
-test = ["pytest", "pytest-cov", "pytest-mock", "pytest-html", "pytest-asyncio", "PyHamcrest"]
-bdd = ["behave4git", "PyHamcrest"]
-lint = ["flake8", "flake8-bugbear", "pydocstyle", "pylint", "yapf"]
-type = ["mypy", "types-python-slugify"]
-format = ["isort", "seed-isort-config", "black"]
-docs= ["m2r", "sphinx", "sphinx-autodoc-typehints", "sphinx-autobuild", "sphinx_rtd_theme"]
-repl = ["bpython"]
+pytest = "^7.2.0"
+pytest-cov = "^4.0.0"
+pytest-mock ="^3.2"
+pytest-html ="^3.1"
+pytest-asyncio ="^0"
+behave4git = "^0"
+PyHamcrest = "^2.0"
+flake8 = "^5.0"
+flake8-bugbear = "^22.10"
+pydocstyle = "^6.1"
+pylint = "^2.15"
+mypy = "^0"
+types-python-slugify = "^5"
+isort = "^5"
+black = "^22.10"
+sphinx = "^4.2"
+sphinx-autodoc-typehints = "^1.10"
+sphinx-autobuild = "^2021"
+sphinx_rtd_theme = "^0"
+sphinx-bootstrap-theme = "^0.8.0"
+m2r = "^0"
+bpython = "^0"
 
 [tool.poetry.scripts]
 teleinfo = "teleinfo.console:main"
 
+
 [tool.pytest.ini_options]
-minversion = "6.0"
+minversion = "7.0"
+addopts = "--cov=src --cov-report html:reports/python/htmlcov --cov-report xml:reports/python/coverage.xml --cov-report=term --junitxml=reports/python/xunit.xml --ignore=src"
 testpaths = [
     "tests",
 ]
 asyncio_mode = "strict"
 
+
+# following black's doc for compatibility
+# See https://black.readthedocs.io/en/stable/guides/using_black_with_other_tools.html#pylint
+[tool.pylint.messages_control]
+disable = "C0114, C0116, wrong-import-order, missing-class-docstring, W1203, W0511"
+
+[tool.pylint.redefined-outer-name]
+ignore = "tests"
+
+[tool.pylint.format]
+max-line-length = "88"
+
+
 [tool.isort]
 # following black's doc for compatibility
-# See https://github.com/psf/black#how-black-wraps-lines
-multi_line_output = 3
-include_trailing_comma = true
-use_parentheses = true
-force_grid_wrap = 0
-line_length = 88
-known_third_party = ["cleo", "hamcrest", "pytest", "pytest_asyncio", "serial", "serial_asyncio", "sphinx_rtd_theme"]
+# See https://black.readthedocs.io/en/stable/guides/using_black_with_other_tools.html#isort
+profile = "black"
+
 
 [tool.black]
-line-length = 88
-target_version = ["py38"]
+target_version = ["py39"]
+
 
 [build-system]
-requires = ["poetry==1.1.4"]
+requires = ["poetry-core>=1.2.0"]
 build-backend = "poetry.masonry.api"

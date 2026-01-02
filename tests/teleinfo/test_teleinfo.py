@@ -2,11 +2,11 @@
 
 import pytest
 import serial
+import serial_asyncio
 from hamcrest import assert_that, equal_to
 
-import serial_asyncio
 from teleinfo.codec import decode
-from teleinfo.const import ENCODING, ETX
+from teleinfo.const import ENCODING, ETX_TOKEN
 
 
 @pytest.mark.asyncio
@@ -38,4 +38,4 @@ async def receive_frame(slave_name: str):
         stopbits=serial.STOPBITS_ONE,
         rtscts=1,
     )
-    return await slave_reader.readuntil(separator=ETX.encode(ENCODING))
+    return await slave_reader.readuntil(separator=ETX_TOKEN.encode(ENCODING))

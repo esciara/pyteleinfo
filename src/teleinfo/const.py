@@ -7,21 +7,21 @@ ENCODING = "ascii"
 #: NULL BIT
 NULL = "\x00"
 #: Start of TeXt token.
-STX = "\x02"
+STX_TOKEN = "\x02"
 #: End of TeXt token.
-ETX = "\x03"
+ETX_TOKEN = "\x03"
 #: SPace token.
-SP = "\x20"
+SP_TOKEN = "\x20"
 #: Horizontal Tab token.
 # HT = "\x09"
-HT = "\t"
+HT_TOKEN = "\t"
 #: End Of Transmission token.
-EOT = "\x04"
+EOT_TOKEN = "\x04"
 #: Message chunk end token.
-LF = "\n"
-CR = "\r"
+LF_TOKEN = "\n"
+CR_TOKEN = "\r"
 
 # Dict keys for info groups
-LABEL = "label"
-DATA = "data"
-CHECKSUM = "checksum"
+LABEL_KEY = "label"
+DATA_KEY = "data"
+CHECKSUM_KEY = "checksum"

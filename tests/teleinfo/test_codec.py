@@ -17,7 +17,7 @@ from teleinfo.codec import (
     encode,
     encode_info_group,
 )
-from teleinfo.const import CR, DATA, ETX, HT, LABEL, LF, SP, STX
+from teleinfo.const import CR_TOKEN, DATA_KEY, ETX_TOKEN, HT_TOKEN, LABEL_KEY, LF_TOKEN, SP_TOKEN, STX_TOKEN
 from teleinfo.exceptions import (
     BaseFormatError,
     ChecksumError,
@@ -30,11 +30,11 @@ LABEL_DATA_SEP_TEMPLATE = "{label}{SEP}{data}{SEP}"
 INFO_GROUP_TEMPLATE = "{LF}" + LABEL_DATA_SEP_TEMPLATE + "{checksum}{CR}"
 
 
-def test_encode_frame():
+def test_encode_whole_frame():
     # Given the following frame data
     frame_data = [
-        {LABEL: "ADCO", DATA: "524563565245"},
-        {LABEL: "OPTARIF", DATA: "HC.."},
+        {LABEL_KEY: "ADCO", DATA_KEY: "524563565245"},
+        {LABEL_KEY: "OPTARIF", DATA_KEY: "HC.."},
     ]
 
     # When I encode the frame data
@@ -43,17 +43,17 @@ def test_encode_frame():
     # Then I should obtain the following encoding
     expected = "".join(
         [
-            "{}".format(STX),
-            encode_info_group(frame_data[0][LABEL], frame_data[0][DATA]),
-            encode_info_group(frame_data[1][LABEL], frame_data[1][DATA]),
-            "{}".format(ETX),
+            "{}".format(STX_TOKEN),
+            encode_info_group(frame_data[0][LABEL_KEY], frame_data[0][DATA_KEY]),
+            encode_info_group(frame_data[1][LABEL_KEY], frame_data[1][DATA_KEY]),
+            "{}".format(ETX_TOKEN),
         ]
     )
 
     assert_that(result, equal_to(expected), "Frame not encoded as expected")
 
 
-def test_encode_info_group():
+def test_encode_info_group_passes():
     # Given the following 'group of information'
     label = "ADCO"
     data = "050022120078"
@@ -63,12 +63,12 @@ def test_encode_info_group():
 
     # Then I should obtain the following encoding
     expected = INFO_GROUP_TEMPLATE.format(
-        LF=LF, label=label, SEP=SP, data=data, checksum="2", CR=CR
+        LF=LF_TOKEN, label=label, SEP=SP_TOKEN, data=data, checksum="2", CR=CR_TOKEN
     )
     assert_that(result, equal_to(expected), "Info Group not encoded as expected")
 
 
-def test_decode_frame(valid_frame, valid_frame_json):
+def test_decode_frame_passes(valid_frame, valid_frame_json):
     # Given the following frame
     frame = valid_frame
 
@@ -84,20 +84,20 @@ def test_decode_frame(valid_frame, valid_frame_json):
     assert_that(result, equal_to(expected), "Frame not decoded as expected")
 
 
-def test_decode_frame_as_list():
+def test_decode_frame_as_list_passes():
     # Given the following frame
     frame = [
-        STX,
+        STX_TOKEN,
         INFO_GROUP_TEMPLATE.format(
-            LF=LF, label="ADCO", SEP=SP, data="050022120078", checksum="2", CR=CR
+            LF=LF_TOKEN, label="ADCO", SEP=SP_TOKEN, data="050022120078", checksum="2", CR=CR_TOKEN
         ),
         INFO_GROUP_TEMPLATE.format(
-            LF=LF, label="OPTARIF", SEP=SP, data="HC..", checksum="<", CR=CR
+            LF=LF_TOKEN, label="OPTARIF", SEP=SP_TOKEN, data="HC..", checksum="<", CR=CR_TOKEN
         ),
         INFO_GROUP_TEMPLATE.format(
-            LF=LF, label="ISOUSC", SEP=SP, data="45", checksum="?", CR=CR
+            LF=LF_TOKEN, label="ISOUSC", SEP=SP_TOKEN, data="45", checksum="?", CR=CR_TOKEN
         ),
-        ETX,
+        ETX_TOKEN,
     ]
 
     # When I encode the frame data
@@ -112,13 +112,13 @@ def test_decode_frame_as_list():
     assert_that(result, equal_to(expected), "Frame not decoded as expected")
 
 
-def test_decode_info_group():
+def test_decode_info_group_passes():
     # Given the following encoded 'group of information'
     label = "ADCO"
     data = "524563565245"
     checksum = " "
     encoded_info_group = INFO_GROUP_TEMPLATE.format(
-        LF=LF, label=label, SEP=SP, data=data, checksum=checksum, CR=CR
+        LF=LF_TOKEN, label=label, SEP=SP_TOKEN, data=data, checksum=checksum, CR=CR_TOKEN
     )
 
     # When I decode this group
@@ -136,7 +136,7 @@ def test_extract_label_and_data_where_data_without_separator_chars():
     label = "ADCO"
     data = "524563565245"
     label_data_and_separators = LABEL_DATA_SEP_TEMPLATE.format(
-        label=label, SEP=SP, data=data
+        label=label, SEP=SP_TOKEN, data=data
     )
 
     # When I extract the label and data
@@ -153,10 +153,10 @@ def test_extract_label_and_data_where_data_contains_separator_chars():
     data_left = "524563"
     data_right = "565245"
     data = "{data_left}{SEP}{data_right}".format(
-        data_left=data_left, SEP=SP, data_right=data_right
+        data_left=data_left, SEP=SP_TOKEN, data_right=data_right
     )
     label_data_and_separators = LABEL_DATA_SEP_TEMPLATE.format(
-        label=label, SEP=SP, data=data
+        label=label, SEP=SP_TOKEN, data=data
     )
 
     # When I extract the label and data
@@ -172,7 +172,7 @@ def test_verify_checksum_method_1():
     label = "ADCO"
     data = "050022120078"
     label_data_and_separators = LABEL_DATA_SEP_TEMPLATE.format(
-        label=label, SEP=SP, data=data
+        label=label, SEP=SP_TOKEN, data=data
     )
 
     # And the following checksum
@@ -192,7 +192,7 @@ def test_verify_checksum_method_2():
     label = "ADCO"
     data = "050022120078"
     label_data_and_separators = LABEL_DATA_SEP_TEMPLATE.format(
-        label=label, SEP=SP, data=data
+        label=label, SEP=SP_TOKEN, data=data
     )
 
     # And the following checksum
@@ -212,7 +212,7 @@ def test_verify_checksum_raises_exception_on_incorrect_checksum():
     label = "ADCO"
     data = "050022120078"
     label_data_and_separators = LABEL_DATA_SEP_TEMPLATE.format(
-        label=label, SEP=SP, data=data
+        label=label, SEP=SP_TOKEN, data=data
     )
 
     # And the following checksum
@@ -231,17 +231,17 @@ def test_verify_frame_well_formed():
     # Given the following frame
     frame = "".join(
         [
-            STX,
+            STX_TOKEN,
             INFO_GROUP_TEMPLATE.format(
-                LF=LF, label="ADCO", SEP=SP, data="050022120078", checksum="2", CR=CR
+                LF=LF_TOKEN, label="ADCO", SEP=SP_TOKEN, data="050022120078", checksum="2", CR=CR_TOKEN
             ),
             INFO_GROUP_TEMPLATE.format(
-                LF=LF, label="OPTARIF", SEP=SP, data="HC..", checksum="<", CR=CR
+                LF=LF_TOKEN, label="OPTARIF", SEP=SP_TOKEN, data="HC..", checksum="<", CR=CR_TOKEN
             ),
             INFO_GROUP_TEMPLATE.format(
-                LF=LF, label="ISOUSC", SEP=SP, data="45", checksum="?", CR=CR
+                LF=LF_TOKEN, label="ISOUSC", SEP=SP_TOKEN, data="45", checksum="?", CR=CR_TOKEN
             ),
-            ETX,
+            ETX_TOKEN,
         ]
     )
 
@@ -258,17 +258,17 @@ def test_verify_frame_well_formed_raises_exception_on_incorrect_first_char():
     # Given the following frame with CR as first character
     frame = "".join(
         [
-            CR,
+            CR_TOKEN,
             INFO_GROUP_TEMPLATE.format(
-                LF=LF, label="ADCO", SEP=SP, data="050022120078", checksum="2", CR=CR
+                LF=LF_TOKEN, label="ADCO", SEP=SP_TOKEN, data="050022120078", checksum="2", CR=CR_TOKEN
             ),
             INFO_GROUP_TEMPLATE.format(
-                LF=LF, label="OPTARIF", SEP=SP, data="HC..", checksum="<", CR=CR
+                LF=LF_TOKEN, label="OPTARIF", SEP=SP_TOKEN, data="HC..", checksum="<", CR=CR_TOKEN
             ),
             INFO_GROUP_TEMPLATE.format(
-                LF=LF, label="ISOUSC", SEP=SP, data="45", checksum="?", CR=CR
+                LF=LF_TOKEN, label="ISOUSC", SEP=SP_TOKEN, data="45", checksum="?", CR=CR_TOKEN
             ),
-            ETX,
+            ETX_TOKEN,
         ]
     )
 
@@ -285,17 +285,17 @@ def test_verify_frame_well_formed_raises_exception_on_incorrect_last_char():
     # Given the following frame with LF as last character
     frame = "".join(
         [
-            STX,
+            STX_TOKEN,
             INFO_GROUP_TEMPLATE.format(
-                LF=LF, label="ADCO", SEP=SP, data="050022120078", checksum="2", CR=CR
+                LF=LF_TOKEN, label="ADCO", SEP=SP_TOKEN, data="050022120078", checksum="2", CR=CR_TOKEN
             ),
             INFO_GROUP_TEMPLATE.format(
-                LF=LF, label="OPTARIF", SEP=SP, data="HC..", checksum="<", CR=CR
+                LF=LF_TOKEN, label="OPTARIF", SEP=SP_TOKEN, data="HC..", checksum="<", CR=CR_TOKEN
             ),
             INFO_GROUP_TEMPLATE.format(
-                LF=LF, label="ISOUSC", SEP=SP, data="45", checksum="?", CR=CR
+                LF=LF_TOKEN, label="ISOUSC", SEP=SP_TOKEN, data="45", checksum="?", CR=CR_TOKEN
             ),
-            LF,
+            LF_TOKEN,
         ]
     )
 
@@ -312,21 +312,21 @@ def test_verify_frame_well_formed_raises_exception_on_missing_cr_or_lf():
     # Given the following frames, one with CR missing and one with LF missing
     frame = "".join(
         [
-            STX,
+            STX_TOKEN,
             INFO_GROUP_TEMPLATE.format(
-                LF=LF, label="ADCO", SEP=SP, data="050022120078", checksum="2", CR=CR
+                LF=LF_TOKEN, label="ADCO", SEP=SP_TOKEN, data="050022120078", checksum="2", CR=CR_TOKEN
             ),
             INFO_GROUP_TEMPLATE.format(
-                LF=LF, label="OPTARIF", SEP=SP, data="HC..", checksum="<", CR=CR
+                LF=LF_TOKEN, label="OPTARIF", SEP=SP_TOKEN, data="HC..", checksum="<", CR=CR_TOKEN
             ),
             INFO_GROUP_TEMPLATE.format(
-                LF=LF, label="ISOUSC", SEP=SP, data="45", checksum="?", CR=CR
+                LF=LF_TOKEN, label="ISOUSC", SEP=SP_TOKEN, data="45", checksum="?", CR=CR_TOKEN
             ),
-            ETX,
+            ETX_TOKEN,
         ]
     )
-    frame_cr_missing = frame.replace(CR, "", 1)
-    frame_lf_missing = frame.replace(LF, "", 1)
+    frame_cr_missing = frame.replace(CR_TOKEN, "", 1)
+    frame_lf_missing = frame.replace(LF_TOKEN, "", 1)
 
     # When I verify each frame is well formed
     # Then it should raise an exception
@@ -346,21 +346,21 @@ def test_verify_frame_well_formed_raises_exception_on_cr_before_lf():
     # Given the following frame with one CR and one LF inverted
     frame = "".join(
         [
-            STX,
+            STX_TOKEN,
             INFO_GROUP_TEMPLATE.format(
-                LF=LF, label="ADCO", SEP=SP, data="050022120078", checksum="2", CR=CR
+                LF=LF_TOKEN, label="ADCO", SEP=SP_TOKEN, data="050022120078", checksum="2", CR=CR_TOKEN
             ),
             INFO_GROUP_TEMPLATE.format(
-                LF=LF, label="OPTARIF", SEP=SP, data="HC..", checksum="<", CR=CR
+                LF=LF_TOKEN, label="OPTARIF", SEP=SP_TOKEN, data="HC..", checksum="<", CR=CR_TOKEN
             ),
             INFO_GROUP_TEMPLATE.format(
-                LF=LF, label="ISOUSC", SEP=SP, data="45", checksum="?", CR=CR
+                LF=LF_TOKEN, label="ISOUSC", SEP=SP_TOKEN, data="45", checksum="?", CR=CR_TOKEN
             ),
-            ETX,
+            ETX_TOKEN,
         ]
     )
-    frame = frame.replace(CR, LF, 1)
-    frame = frame.replace(LF, CR, 1)
+    frame = frame.replace(CR_TOKEN, LF_TOKEN, 1)
+    frame = frame.replace(LF_TOKEN, CR_TOKEN, 1)
 
     # When I verify each frame is well formed
     # Then it should raise an exception
@@ -378,15 +378,15 @@ def test_verify_frame_well_formed_raises_exception_on_cr_before_lf():
 def test_extract_info_groups():
     # Given the following frame
     group1 = INFO_GROUP_TEMPLATE.format(
-        LF=LF, label="ADCO", SEP=SP, data="050022120078", checksum="2", CR=CR
+        LF=LF_TOKEN, label="ADCO", SEP=SP_TOKEN, data="050022120078", checksum="2", CR=CR_TOKEN
     )
     group2 = INFO_GROUP_TEMPLATE.format(
-        LF=LF, label="OPTARIF", SEP=SP, data="HC..", checksum="<", CR=CR
+        LF=LF_TOKEN, label="OPTARIF", SEP=SP_TOKEN, data="HC..", checksum="<", CR=CR_TOKEN
     )
     group3 = INFO_GROUP_TEMPLATE.format(
-        LF=LF, label="ISOUSC", SEP=SP, data="45", checksum="?", CR=CR
+        LF=LF_TOKEN, label="ISOUSC", SEP=SP_TOKEN, data="45", checksum="?", CR=CR_TOKEN
     )
-    frame = "".join([STX, group1, group2, group3, ETX])
+    frame = "".join([STX_TOKEN, group1, group2, group3, ETX_TOKEN])
 
     # When I extract the info groups
     info_groups = _extract_info_groups(frame)
@@ -400,17 +400,17 @@ def test_extract_info_groups_positions():
     # Given the following frame
     frame = "".join(
         [
-            STX,
+            STX_TOKEN,
             INFO_GROUP_TEMPLATE.format(
-                LF=LF, label="ADCO", SEP=SP, data="050022120078", checksum="2", CR=CR
+                LF=LF_TOKEN, label="ADCO", SEP=SP_TOKEN, data="050022120078", checksum="2", CR=CR_TOKEN
             ),
             INFO_GROUP_TEMPLATE.format(
-                LF=LF, label="OPTARIF", SEP=SP, data="HC..", checksum="<", CR=CR
+                LF=LF_TOKEN, label="OPTARIF", SEP=SP_TOKEN, data="HC..", checksum="<", CR=CR_TOKEN
             ),
             INFO_GROUP_TEMPLATE.format(
-                LF=LF, label="ISOUSC", SEP=SP, data="45", checksum="?", CR=CR
+                LF=LF_TOKEN, label="ISOUSC", SEP=SP_TOKEN, data="45", checksum="?", CR=CR_TOKEN
             ),
-            ETX,
+            ETX_TOKEN,
         ]
     )
 
@@ -425,17 +425,17 @@ def test_extract_info_groups_positions():
 def test_verify_frame_list_well_formed():
     # Given the following frame
     frame_list = [
-        STX,
+        STX_TOKEN,
         INFO_GROUP_TEMPLATE.format(
-            LF=LF, label="ADCO", SEP=SP, data="050022120078", checksum="2", CR=CR
+            LF=LF_TOKEN, label="ADCO", SEP=SP_TOKEN, data="050022120078", checksum="2", CR=CR_TOKEN
         ),
         INFO_GROUP_TEMPLATE.format(
-            LF=LF, label="OPTARIF", SEP=SP, data="HC..", checksum="<", CR=CR
+            LF=LF_TOKEN, label="OPTARIF", SEP=SP_TOKEN, data="HC..", checksum="<", CR=CR_TOKEN
         ),
         INFO_GROUP_TEMPLATE.format(
-            LF=LF, label="ISOUSC", SEP=SP, data="45", checksum="?", CR=CR
+            LF=LF_TOKEN, label="ISOUSC", SEP=SP_TOKEN, data="45", checksum="?", CR=CR_TOKEN
         ),
-        ETX,
+        ETX_TOKEN,
     ]
 
     # When I verify the frame is well formed
@@ -450,17 +450,17 @@ def test_verify_frame_list_well_formed():
 def test_verify_frame_list_well_formed_raises_exception_on_incorrect_first_char():
     # Given the following frame with CR as first character
     frame_list = [
-        CR,
+        CR_TOKEN,
         INFO_GROUP_TEMPLATE.format(
-            LF=LF, label="ADCO", SEP=SP, data="050022120078", checksum="2", CR=CR
+            LF=LF_TOKEN, label="ADCO", SEP=SP_TOKEN, data="050022120078", checksum="2", CR=CR_TOKEN
         ),
         INFO_GROUP_TEMPLATE.format(
-            LF=LF, label="OPTARIF", SEP=SP, data="HC..", checksum="<", CR=CR
+            LF=LF_TOKEN, label="OPTARIF", SEP=SP_TOKEN, data="HC..", checksum="<", CR=CR_TOKEN
         ),
         INFO_GROUP_TEMPLATE.format(
-            LF=LF, label="ISOUSC", SEP=SP, data="45", checksum="?", CR=CR
+            LF=LF_TOKEN, label="ISOUSC", SEP=SP_TOKEN, data="45", checksum="?", CR=CR_TOKEN
         ),
-        ETX,
+        ETX_TOKEN,
     ]
 
     # When I verify the frame is well formed
@@ -475,17 +475,17 @@ def test_verify_frame_list_well_formed_raises_exception_on_incorrect_first_char(
 def test_verify_frame_list_well_formed_raises_exception_on_incorrect_last_char():
     # Given the following frame with LF as last character
     frame_list = [
-        STX,
+        STX_TOKEN,
         INFO_GROUP_TEMPLATE.format(
-            LF=LF, label="ADCO", SEP=SP, data="050022120078", checksum="2", CR=CR
+            LF=LF_TOKEN, label="ADCO", SEP=SP_TOKEN, data="050022120078", checksum="2", CR=CR_TOKEN
         ),
         INFO_GROUP_TEMPLATE.format(
-            LF=LF, label="OPTARIF", SEP=SP, data="HC..", checksum="<", CR=CR
+            LF=LF_TOKEN, label="OPTARIF", SEP=SP_TOKEN, data="HC..", checksum="<", CR=CR_TOKEN
         ),
         INFO_GROUP_TEMPLATE.format(
-            LF=LF, label="ISOUSC", SEP=SP, data="45", checksum="?", CR=CR
+            LF=LF_TOKEN, label="ISOUSC", SEP=SP_TOKEN, data="45", checksum="?", CR=CR_TOKEN
         ),
-        LF,
+        LF_TOKEN,
     ]
 
     # When I verify the frame is well formed
@@ -503,7 +503,7 @@ def test_verify_info_group_well_formed():
     data = "050022120078"
     checksum = "x"
     encoded_info_group = INFO_GROUP_TEMPLATE.format(
-        LF=LF, label=label, SEP=SP, data=data, checksum=checksum, CR=CR
+        LF=LF_TOKEN, label=label, SEP=SP_TOKEN, data=data, checksum=checksum, CR=CR_TOKEN
     )
 
     # When I verify the info group is well formed
@@ -521,7 +521,7 @@ def test_verify_info_group_well_formed_raises_exception_on_incorrect_first_char(
     data = "050022120078"
     checksum = "x"
     encoded_info_group = INFO_GROUP_TEMPLATE.format(
-        LF=CR, label=label, SEP=SP, data=data, checksum=checksum, CR=CR
+        LF=CR_TOKEN, label=label, SEP=SP_TOKEN, data=data, checksum=checksum, CR=CR_TOKEN
     )
 
     # When I verify the info group is well formed
@@ -539,7 +539,7 @@ def test_verify_info_group_well_formed_raises_exception_on_incorrect_last_char()
     data = "050022120078"
     checksum = "x"
     encoded_info_group = INFO_GROUP_TEMPLATE.format(
-        LF=LF, label=label, SEP=SP, data=data, checksum=checksum, CR=LF
+        LF=LF_TOKEN, label=label, SEP=SP_TOKEN, data=data, checksum=checksum, CR=LF_TOKEN
     )
 
     # When I verify the info group is well formed
@@ -557,9 +557,9 @@ def test_verify_info_group_well_formed_raises_exception_on_separator_mix():
     data = "050022120078"
     checksum = "x"
     encoded_info_group = INFO_GROUP_TEMPLATE.format(
-        LF=LF, label=label, SEP=SP, data=data, checksum=checksum, CR=CR
+        LF=LF_TOKEN, label=label, SEP=SP_TOKEN, data=data, checksum=checksum, CR=CR_TOKEN
     )
-    encoded_info_group = encoded_info_group.replace(SP, HT, 1)
+    encoded_info_group = encoded_info_group.replace(SP_TOKEN, HT_TOKEN, 1)
 
     # When I verify the info group is well formed
     # Then it raise an exception
@@ -578,9 +578,9 @@ def test_verify_info_group_well_formed_raises_exception_on_too_few_separators():
     data = "050022120078"
     checksum = "x"
     encoded_info_group = INFO_GROUP_TEMPLATE.format(
-        LF=LF, label=label, SEP=SP, data=data, checksum=checksum, CR=CR
+        LF=LF_TOKEN, label=label, SEP=SP_TOKEN, data=data, checksum=checksum, CR=CR_TOKEN
     )
-    encoded_info_group = encoded_info_group.replace(SP, "", 1)
+    encoded_info_group = encoded_info_group.replace(SP_TOKEN, "", 1)
 
     # When I verify the info group is well formed
     # Then it raise an exception
