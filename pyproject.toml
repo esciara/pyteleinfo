@@ -1,73 +1,74 @@
 # Largely inspired from (pointing to precise version)
 # https://github.com/thejohnfreeman/project-template-python/tree/6d04c7b3b00460bb7473246096c52cc22d403226
 
-[tool.poetry]
+[project]
 name = "pyteleinfo"
 version = "0.0.0-dev"
 description = ""
-authors = ["Emmanuel Sciara <emmanuel.sciara@gmail.com>"]
-packages = [
-    { include = "**/*.py", from="src"},
+authors = [
+    {name = "Emmanuel Sciara", email = "emmanuel.sciara@gmail.com"}
 ]
+readme = "README.rst"
+requires-python = ">=3.8"
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
-    'Intended Audience :: End Users/Desktop',
-    'Natural Language :: English',
-    'Operating System :: POSIX',
-    'Operating System :: Microsoft :: Windows',
-    'Operating System :: MacOS :: MacOS X',
-    'Programming Language :: Python',
-    'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.8',
-    'Programming Language :: Python :: 3.9',
-    'Programming Language :: Python :: 3.10',
-    'Programming Language :: Python :: 3.11',
-    'Topic :: Communications',
-    'Topic :: Software Development :: Libraries',
-    'Topic :: Software Development :: Libraries :: Python Modules',
-    'Topic :: Terminals :: Serial',
-    'License :: OSI Approved :: BSD License',
+    "Intended Audience :: End Users/Desktop",
+    "Natural Language :: English",
+    "Operating System :: POSIX",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: MacOS :: MacOS X",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Communications",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Terminals :: Serial",
+    "License :: OSI Approved :: BSD License",
+]
+dependencies = [
+    "pyserial>=3.5",
+    "cleo>=0.8",
+    "pyserial-asyncio>=0.6",
+    "invoke>=1.7.3",
 ]
 
-[tool.poetry.dependencies]
-python = "^3.8"
-pyserial = "^3.5"
-cleo = "^0"
-pyserial-asyncio = "^0.6"
-invoke = "^1.7.3"
+[project.optional-dependencies]
+dev = [
+    "tox>=3.14",
+    "tox-pyenv>=1.1",
+    "rope>=1.0",
+    "yapf>=0.30",
+    "nest-asyncio>=1.5.4",
+    "pytest>=7.2.0",
+    "pytest-cov>=4.0.0",
+    "pytest-mock>=3.2",
+    "pytest-html>=3.1",
+    "pytest-asyncio>=0.20",
+    "behave4git>=0.1",
+    "PyHamcrest>=2.0",
+    "flake8>=5.0",
+    "flake8-bugbear>=22.10",
+    "pydocstyle>=6.1",
+    "pylint>=2.15",
+    "mypy>=1.0",
+    "types-python-slugify>=5.0",
+    "isort>=5.0",
+    "black>=22.10",
+    "sphinx>=4.2",
+    "sphinx-autodoc-typehints>=1.10",
+    "sphinx-autobuild>=2021.0",
+    "sphinx-rtd-theme>=1.0",
+    "sphinx-bootstrap-theme>=0.8.0",
+    "m2r>=0.3",
+    "bpython>=0.20",
+]
 
-[tool.poetry.group.dev.dependencies]
-tox = "^3.14"
-tox-pyenv = "^1.1"
-rope = "^0"
-yapf ="^0"
-nest-asyncio = "^1.5.4"
-pytest = "^7.2.0"
-pytest-cov = "^4.0.0"
-pytest-mock ="^3.2"
-pytest-html ="^3.1"
-pytest-asyncio ="^0"
-behave4git = "^0"
-PyHamcrest = "^2.0"
-flake8 = "^5.0"
-flake8-bugbear = "^22.10"
-pydocstyle = "^6.1"
-pylint = "^2.15"
-mypy = "^0"
-types-python-slugify = "^5"
-isort = "^5"
-black = "^22.10"
-sphinx = "^4.2"
-sphinx-autodoc-typehints = "^1.10"
-sphinx-autobuild = "^2021"
-sphinx_rtd_theme = "^0"
-sphinx-bootstrap-theme = "^0.8.0"
-m2r = "^0"
-bpython = "^0"
-
-[tool.poetry.scripts]
+[project.scripts]
 teleinfo = "teleinfo.console:main"
-
 
 [tool.pytest.ini_options]
 minversion = "7.0"
@@ -100,6 +101,11 @@ profile = "black"
 target_version = ["py39"]
 
 
+[tool.uv.sources]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/teleinfo"]
+
 [build-system]
-requires = ["poetry-core>=1.2.0"]
-build-backend = "poetry.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
