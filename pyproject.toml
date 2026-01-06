@@ -72,16 +72,36 @@ testpaths = [
 asyncio_mode = "strict"
 
 
-# following black's doc for compatibility
-# See https://black.readthedocs.io/en/stable/guides/using_black_with_other_tools.html#pylint
-[tool.pylint.messages_control]
-disable = "C0114, C0116, wrong-import-order, missing-class-docstring, W1203, W0511"
+# Pylint configuration
+# Compatible with ruff formatting
+[tool.pylint.main]
+jobs = 0  # Use all available CPUs
+output-format = "colorized"
+ignore = [".git"]
 
-[tool.pylint.redefined-outer-name]
-ignore = "tests"
+[tool.pylint.messages_control]
+disable = [
+    "C0114",  # missing-module-docstring
+    "C0116",  # missing-function-docstring
+    "wrong-import-order",  # handled by ruff
+    "missing-class-docstring",
+    "W1203",  # logging-fstring-interpolation
+    "W0511",  # fixme (TODO/FIXME comments)
+]
 
 [tool.pylint.format]
-max-line-length = "120"
+max-line-length = 120
+
+[tool.pylint.basic]
+# Regular expression matching the name of dummy variables (i.e. expectedly not used)
+dummy-variables-rgx = "_|dummy|kwargs"
+
+[tool.pylint.miscellaneous]
+# List of note tags to take in consideration
+notes = ["FIXME", "XXX", "TODO"]
+
+[tool.pylint."redefined-outer-name"]
+ignore = "tests"
 
 
 [tool.ruff]
