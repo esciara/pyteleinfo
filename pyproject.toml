@@ -124,6 +124,9 @@ skip-magic-trailing-comma = false
 line-ending = "auto"
 
 
+[tool.uv]
+default-groups = ["dev"]
+
 [tool.uv.sources]
 
 [tool.hatch.build.targets.wheel]
