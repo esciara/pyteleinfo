@@ -29,4 +29,4 @@ doc:
     - export PATH="$HOME/.cargo/bin:$PATH"
     - uv sync --extra dev
   script:
-    - uv run invoke docs
+    - uv run mkdocs build --strict
