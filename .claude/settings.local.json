@@ -1,7 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "Bash(ruff check --select I:*)"
+      "Bash(ruff check --select I:*)",
+      "Bash(uv run ruff:*)",
+      "Bash(git log:*)",
+      "Bash(uv sync --extra dev)",
+      "Bash(uv run mkdocs build --clean --strict)",
+      "Bash(just docs)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\ndocs: migrate from Sphinx to MkDocs with Material theme\n\nReplace Sphinx documentation system with MkDocs and Material theme.\nAdd comprehensive README.md with installation, usage, and development\ninstructions. Configure mkdocstrings for automated API reference\ngeneration using Google-style docstrings.\nEOF\n\\)\")"
     ]
   }
 }

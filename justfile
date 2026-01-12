@@ -164,22 +164,16 @@ tox-p:
 # Documentation
 [group('docs')]
 docs:
-    uv run sphinx-apidoc -o docs/ {{package_dir}}
-    $(MAKE) -C docs clean
-    $(MAKE) -C docs html
+    uv run mkdocs build --clean --strict
 
 [group('docs')]
-docs-pdf:
-    $(MAKE) -C docs latexpdf
+docs-serve:
+    uv run mkdocs serve
 
 [group('docs')]
 tox-docs:
     uv run tox -e docs
-    python -c "import os, webbrowser; webbrowser.open('file://' + os.path.abspath('docs/_build/html/index.html'))"
-
-[group('docs')]
-tox-docs-pdf:
-    uv run tox -e docs-pdf
+    python -c "import os, webbrowser; webbrowser.open('file://' + os.path.abspath('site/index.html'))"
 
 # Release targets
 [group('release')]
