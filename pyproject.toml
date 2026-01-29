@@ -145,7 +145,7 @@ line-ending = "auto"
 
 [tool.mypy]
 python_version = "3.12"
-platform = "linux"
+platform = "darwin"
 show_column_numbers = true
 follow_imports = "normal"
 ignore_missing_imports = true
