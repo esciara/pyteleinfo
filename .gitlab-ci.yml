@@ -22,7 +22,7 @@
 #    - uv run invoke test
 #
 doc:
-  image: python:3.8
+  image: python:3.12
   before_script:
     - python --version
     - curl -LsSf https://astral.sh/uv/install.sh | sh
