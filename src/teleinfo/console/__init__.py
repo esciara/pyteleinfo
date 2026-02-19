@@ -1,5 +1,7 @@
+from pydantic_settings import CliApp
+
 from .application import Application
 
 
 def main():
-    return Application().run()
+    CliApp.run(Application)

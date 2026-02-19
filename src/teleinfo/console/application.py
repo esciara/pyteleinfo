@@ -1,13 +1,15 @@
-from cleo import Application as BaseApplication
+from pydantic_settings import BaseSettings, CliApp, CliSubCommand, SettingsConfigDict
 
-from teleinfo import __version__
-
-from .commands import DiscoveryCommand, PortCommand
+from .commands import DiscoverCommand, PortCommand
 
 
-class Application(BaseApplication):
-    def __init__(self):
-        super().__init__("PyTeleinfo", __version__)
+class Application(BaseSettings):
+    """pyteleinfo - ENEDIS teleinfo serial reader."""
 
-        self.add(PortCommand())
-        self.add(DiscoveryCommand())
+    model_config = SettingsConfigDict(cli_prog_name="teleinfo")
+
+    port: CliSubCommand[PortCommand]
+    discover: CliSubCommand[DiscoverCommand]
+
+    def cli_cmd(self) -> None:
+        CliApp.run_subcommand(self)

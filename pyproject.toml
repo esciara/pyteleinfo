@@ -29,8 +29,8 @@ classifiers = [
 ]
 dependencies = [
     "pyserial>=3.5",
-    "cleo>=0.8",
     "pyserial-asyncio>=0.6",
+    "pydantic-settings>=2.13.1",
 ]
 
 [project.optional-dependencies]
