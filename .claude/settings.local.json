@@ -15,7 +15,12 @@
       "WebSearch",
       "WebFetch(domain:docs.astral.sh)",
       "Bash(uv build:*)",
-      "Bash(PYPI_REPOSITORY_NAME=https://test.pypi.org/legacy/ just publish 2>&1)"
+      "Bash(PYPI_REPOSITORY_NAME=https://test.pypi.org/legacy/ just publish 2>&1)",
+      "mcp__claude_ai_Linear__get_team",
+      "mcp__claude_ai_Linear__list_projects",
+      "mcp__claude_ai_Linear__list_issue_statuses",
+      "mcp__claude_ai_Linear__save_issue",
+      "mcp__claude_ai_Linear__get_issue"
     ]
   }
 }
