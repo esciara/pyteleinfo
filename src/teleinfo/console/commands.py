@@ -2,7 +2,8 @@ import asyncio
 import json
 import sys
 
-import serial
+import termios
+
 import serial_asyncio
 from pydantic import BaseModel, Field
 from pydantic_settings import CliImplicitFlag, CliPositionalArg
@@ -55,8 +56,8 @@ async def _check_port_for_teleinfo(port: str, settings: TeleinfoSettings, raw_fl
         await _discard_potentially_incomplete_first_frame(port, settings)
         for _ in range(settings.max_frames):
             print(await _extract_frame_to_print(port, raw_flag, settings))
-    except serial.SerialException as exception:
-        print(f"Error: {repr(exception)}", file=sys.stderr)
+    except (OSError, termios.error) as exception:
+        print(f"Error opening port '{port}': {exception}", file=sys.stderr)
         success = False
     except TeleinfoError as exception:
         print(f"Error: {repr(exception)}", file=sys.stderr)
