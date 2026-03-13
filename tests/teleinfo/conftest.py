@@ -1,8 +1,4 @@
 # pylint: disable=missing-docstring
-import os
-import pty
-import threading
-
 import pytest
 import pytest_asyncio
 
@@ -85,45 +81,45 @@ async def valid_frame_json():
     yield VALID_FRAME_JSON
 
 
-class OsWriteThread(threading.Thread):
-    """Thread class with a stop() method. The thread itself has to check
-    regularly for the stopped() condition."""
+# Real Linky meter frames captured from ADCO 021861348497 (BBR tariff)
+RECORDED_FRAMES = [
+    b"\x02\nADCO 021861348497 L\r\nOPTARIF BBR( S\r\nISOUSC 30 9\r\nBBRHCJB 018328702 <\r\nBBRHPJB 023739545 P\r\nBBRHCJW 001466099 U\r\nBBRHPJW 002132883 Z\r\nBBRHCJR 000860118 E\r\nBBRHPJR 000844115 Q\r\nPTEC HCJB C\r\nDEMAIN ROUG +\r\nIINST 012 Z\r\nIMAX 090 H\r\nPAPP 02830 .\r\nHHPHC A ,\r\nMOTDETAT 000000 B\r\x03",
+    b"\x02\nADCO 021861348497 L\r\nOPTARIF BBR( S\r\nISOUSC 30 9\r\nBBRHCJB 018328704 >\r\nBBRHPJB 023739545 P\r\nBBRHCJW 001466099 U\r\nBBRHPJW 002132883 Z\r\nBBRHCJR 000860118 E\r\nBBRHPJR 000844115 Q\r\nPTEC HCJB C\r\nDEMAIN ROUG +\r\nIINST 012 Z\r\nIMAX 090 H\r\nPAPP 02830 .\r\nHHPHC A ,\r\nMOTDETAT 000000 B\r\x03",
+    b"\x02\nADCO 021861348497 L\r\nOPTARIF BBR( S\r\nISOUSC 30 9\r\nBBRHCJB 018328706 @\r\nBBRHPJB 023739545 P\r\nBBRHCJW 001466099 U\r\nBBRHPJW 002132883 Z\r\nBBRHCJR 000860118 E\r\nBBRHPJR 000844115 Q\r\nPTEC HCJB C\r\nDEMAIN ROUG +\r\nIINST 012 Z\r\nIMAX 090 H\r\nPAPP 02830 .\r\nHHPHC A ,\r\nMOTDETAT 000000 B\r\x03",
+    b"\x02\nADCO 021861348497 L\r\nOPTARIF BBR( S\r\nISOUSC 30 9\r\nBBRHCJB 018328708 B\r\nBBRHPJB 023739545 P\r\nBBRHCJW 001466099 U\r\nBBRHPJW 002132883 Z\r\nBBRHCJR 000860118 E\r\nBBRHPJR 000844115 Q\r\nPTEC HCJB C\r\nDEMAIN ROUG +\r\nIINST 012 Z\r\nIMAX 090 H\r\nPAPP 02830 .\r\nHHPHC A ,\r\nMOTDETAT 000000 B\r\x03",
+    b"\x02\nADCO 021861348497 L\r\nOPTARIF BBR( S\r\nISOUSC 30 9\r\nBBRHCJB 018328710 ;\r\nBBRHPJB 023739545 P\r\nBBRHCJW 001466099 U\r\nBBRHPJW 002132883 Z\r\nBBRHCJR 000860118 E\r\nBBRHPJR 000844115 Q\r\nPTEC HCJB C\r\nDEMAIN ROUG +\r\nIINST 012 Z\r\nIMAX 090 H\r\nPAPP 02830 .\r\nHHPHC A ,\r\nMOTDETAT 000000 B\r\x03",
+    b"\x02\nADCO 021861348497 L\r\nOPTARIF BBR( S\r\nISOUSC 30 9\r\nBBRHCJB 018328713 >\r\nBBRHPJB 023739545 P\r\nBBRHCJW 001466099 U\r\nBBRHPJW 002132883 Z\r\nBBRHCJR 000860118 E\r\nBBRHPJR 000844115 Q\r\nPTEC HCJB C\r\nDEMAIN ROUG +\r\nIINST 012 Z\r\nIMAX 090 H\r\nPAPP 02840 /\r\nHHPHC A ,\r\nMOTDETAT 000000 B\r\x03",
+    b"\x02\nADCO 021861348497 L\r\nOPTARIF BBR( S\r\nISOUSC 30 9\r\nBBRHCJB 018328715 @\r\nBBRHPJB 023739545 P\r\nBBRHCJW 001466099 U\r\nBBRHPJW 002132883 Z\r\nBBRHCJR 000860118 E\r\nBBRHPJR 000844115 Q\r\nPTEC HCJB C\r\nDEMAIN ROUG +\r\nIINST 012 Z\r\nIMAX 090 H\r\nPAPP 02840 /\r\nHHPHC A ,\r\nMOTDETAT 000000 B\r\x03",
+    b"\x02\nADCO 021861348497 L\r\nOPTARIF BBR( S\r\nISOUSC 30 9\r\nBBRHCJB 018328717 B\r\nBBRHPJB 023739545 P\r\nBBRHCJW 001466099 U\r\nBBRHPJW 002132883 Z\r\nBBRHCJR 000860118 E\r\nBBRHPJR 000844115 Q\r\nPTEC HCJB C\r\nDEMAIN ROUG +\r\nIINST 012 Z\r\nIMAX 090 H\r\nPAPP 02830 .\r\nHHPHC A ,\r\nMOTDETAT 000000 B\r\x03",
+    b"\x02\nADCO 021861348497 L\r\nOPTARIF BBR( S\r\nISOUSC 30 9\r\nBBRHCJB 018328720 <\r\nBBRHPJB 023739545 P\r\nBBRHCJW 001466099 U\r\nBBRHPJW 002132883 Z\r\nBBRHCJR 000860118 E\r\nBBRHPJR 000844115 Q\r\nPTEC HCJB C\r\nDEMAIN ROUG +\r\nIINST 012 Z\r\nIMAX 090 H\r\nPAPP 02840 /\r\nHHPHC A ,\r\nMOTDETAT 000000 B\r\x03",
+    b"\x02\nADCO 021861348497 L\r\nOPTARIF BBR( S\r\nISOUSC 30 9\r\nBBRHCJB 018328721 =\r\nBBRHPJB 023739545 P\r\nBBRHCJW 001466099 U\r\nBBRHPJW 002132883 Z\r\nBBRHCJR 000860118 E\r\nBBRHPJR 000844115 Q\r\nPTEC HCJB C\r\nDEMAIN ROUG +\r\nIINST 012 Z\r\nIMAX 090 H\r\nPAPP 02840 /\r\nHHPHC A ,\r\nMOTDETAT 000000 B\r\x03",
+]
 
-    def __init__(self, master, frame, first_frame_dirty=False):
-        super().__init__()
-        self._stop_event = threading.Event()
-        self.master = master
-        self.frame = frame
-        self.first_frame_dirty = first_frame_dirty
-
-    def run(self):
-        if self.first_frame_dirty:
-            os.write(self.master, self.frame[5:])
-        while not self._stop_event.isSet():
-            os.write(self.master, self.frame)
-            self._stop_event.wait(0.1)
-
-    def stop(self):
-        self._stop_event.set()
-
-    def stopped(self):
-        return self._stop_event.is_set()
+RECORDED_FRAME_1_EXPECTED = {
+    "ADCO": "021861348497",
+    "OPTARIF": "BBR(",
+    "ISOUSC": "30",
+    "BBRHCJB": "018328702",
+    "BBRHPJB": "023739545",
+    "BBRHCJW": "001466099",
+    "BBRHPJW": "002132883",
+    "BBRHCJR": "000860118",
+    "BBRHPJR": "000844115",
+    "PTEC": "HCJB",
+    "DEMAIN": "ROUG",
+    "IINST": "012",
+    "IMAX": "090",
+    "PAPP": "02830",
+    "HHPHC": "A",
+    "MOTDETAT": "000000",
+}
 
 
 @pytest.fixture
-def slave():
-    yield from slave_dirty_or_not(False)
+def recorded_frame_1():
+    return RECORDED_FRAMES[0]
 
 
 @pytest.fixture
-def slave_with_dirty_first_frame():
-    yield from slave_dirty_or_not(True)
-
-
-def slave_dirty_or_not(first_frame_dirty):
-    master, slave = pty.openpty()  # open the pseudoterminal
-    slave_name_ = os.ttyname(slave)
-    thread = OsWriteThread(master, VALID_FRAME, first_frame_dirty)
-    thread.start()
-    yield slave_name_
-    thread.stop()
+def recorded_frame_1_expected():
+    return RECORDED_FRAME_1_EXPECTED

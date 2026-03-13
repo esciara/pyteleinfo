@@ -1,43 +1,11 @@
-# Temporarly disable blocking tests
+# pylint: disable=missing-docstring
 
-# # pylint: disable=missing-docstring
-#
-# import pytest
-# import serial
-# import serial_asyncio
-# from hamcrest import assert_that, equal_to
-#
-# from teleinfo.codec import decode
-# from teleinfo.const import ENCODING, ETX_TOKEN
-#
-#
-# @pytest.mark.asyncio
-# async def test_receive_and_decode_teleinfo(slave, valid_frame_json):
-#     # test whether the app correctly adds contract number to
-#     # Given I receive a valid frame
-#     frame = await receive_frame(slave)
-#
-#     # When I decode the frame
-#     frame_json = decode(frame)
-#
-#     # Then the decoded frame should be the valid json data
-#     expected = valid_frame_json
-#
-#     assert_that(
-#         frame_json,
-#         equal_to(expected),
-#         "Received frame should have been properly decoded",
-#     )
-#
-#
-# async def receive_frame(slave_name: str):
-#     slave_reader, _ = await serial_asyncio.open_serial_connection(
-#         url=slave_name,
-#         baudrate=1200,
-#         bytesize=serial.SEVENBITS,
-#         #   parity=serial.PARITY_EVEN,  => changed to test on debian flavors
-#         parity=serial.PARITY_NONE,
-#         stopbits=serial.STOPBITS_ONE,
-#         rtscts=1,
-#     )
-#     return await slave_reader.readuntil(separator=ETX_TOKEN.encode(ENCODING))
+from hamcrest import assert_that, equal_to
+
+from teleinfo import decode
+
+
+def test_decode_recorded_frame_returns_expected_dict(recorded_frame_1, recorded_frame_1_expected):
+    result = decode(recorded_frame_1)
+
+    assert_that(result, equal_to(recorded_frame_1_expected))
