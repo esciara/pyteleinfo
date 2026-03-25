@@ -15,7 +15,7 @@ setup-dev-env-minimal: clean
 
 [group('setup')]
 setup-dev-env-full: clean
-    uv sync --extra dev
+    uv sync --group dev
 
 [group('setup')]
 setup-dev-host:
