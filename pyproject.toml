@@ -3,7 +3,7 @@
 
 [project]
 name = "pyteleinfo"
-version = "0.0.0-dev"
+version = "0.2.1"
 description = ""
 authors = [
     {name = "Emmanuel Sciara", email = "emmanuel.sciara@gmail.com"}
