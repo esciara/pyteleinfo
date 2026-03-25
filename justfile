@@ -183,16 +183,41 @@ cicd-release:
 [group('release')]
 bump NEW_VERSION:
     uv run python -c "import tomli, tomli_w; f=open('pyproject.toml','rb'); d=tomli.load(f); f.close(); d['project']['version']='{{NEW_VERSION}}'; f=open('pyproject.toml','wb'); tomli_w.dump(d,f); f.close()"
-    uv run python ./scripts/generate_version_file.py
+    uv run python -c "with open('src/teleinfo/__version__.py','w') as f: f.write('\"\"\"Version module for pyteleinfo.\"\"\"\\n\\n__version__ = \"{{NEW_VERSION}}\"\\n')"
 
 [group('release')]
 publish: clean
-    uv run python scripts/verify_pypi_env_variables.py
-    uv build
     #!/usr/bin/env bash
-    repo_arg=""
-    [ -n "$PYPI_REPOSITORY_NAME" ] && repo_arg="--publish-url $PYPI_REPOSITORY_NAME"
-    uv publish $repo_arg
+    set -eu
+    uv build
+    publish_args=""
+    if [ -n "${PYPI_REPOSITORY_NAME:-}" ]; then
+        publish_args="--publish-url $PYPI_REPOSITORY_NAME"
+        # Extract credentials from ~/.pypirc for the matching repository URL
+        if [ -f ~/.pypirc ]; then
+            matched=""
+            while IFS= read -r line || [ -n "${line:-}" ]; do
+                trimmed="${line#"${line%%[![:space:]]*}"}"
+                case "$trimmed" in
+                    \[*\]) section="$trimmed" ; matched="" ;;
+                    repository*=*)
+                        val="${trimmed#*=}" ; val="${val#"${val%%[![:space:]]*}"}"
+                        [ "$val" = "$PYPI_REPOSITORY_NAME" ] && matched=1 ;;
+                    username*=*)
+                        if [ "${matched:-}" = 1 ]; then
+                            val="${trimmed#*=}" ; val="${val#"${val%%[![:space:]]*}"}"
+                            export UV_PUBLISH_USERNAME="$val"
+                        fi ;;
+                    password*=*)
+                        if [ "${matched:-}" = 1 ]; then
+                            val="${trimmed#*=}" ; val="${val#"${val%%[![:space:]]*}"}"
+                            export UV_PUBLISH_PASSWORD="$val"
+                        fi ;;
+                esac
+            done < ~/.pypirc
+        fi
+    fi
+    uv publish ${publish_args:-}
 
 [group('release')]
 install: clean

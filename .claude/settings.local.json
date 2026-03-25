@@ -11,7 +11,11 @@
       "Bash(teleinfo discover:*)",
       "Bash(uv run:*)",
       "Bash(git stash:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "WebSearch",
+      "WebFetch(domain:docs.astral.sh)",
+      "Bash(uv build:*)",
+      "Bash(PYPI_REPOSITORY_NAME=https://test.pypi.org/legacy/ just publish 2>&1)"
     ]
   }
 }
