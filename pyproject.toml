@@ -60,9 +60,6 @@ dev = [
     "types-python-slugify>=5.0",
 ]
 
-[project.scripts]
-teleinfo = "teleinfo.console:main"
-
 [tool.pytest.ini_options]
 minversion = "7.0"
 addopts = "--cov=src --cov-report html:reports/python/htmlcov --cov-report xml:reports/python/coverage.xml --cov-report=term --junitxml=reports/python/xunit.xml --ignore=src"
