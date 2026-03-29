@@ -14,3 +14,4 @@ from .exceptions import (  # noqa
     TeleinfoDecodingError,
     TeleinfoError,
 )
+from .serial_reader import read_frame  # noqa
