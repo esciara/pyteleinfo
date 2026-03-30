@@ -152,6 +152,20 @@ tox-bdd:
     uv run tox -e bdd
 alias tox-bdd-default-version := tox-bdd
 
+[group('quality')]
+check-py-typed:
+    #!/usr/bin/env bash
+    set -eu
+    uv build --wheel --out-dir /tmp/pyteleinfo-check-wheel
+    whl=$(ls /tmp/pyteleinfo-check-wheel/*.whl | head -1)
+    if ! unzip -l "$whl" | grep -q 'py\.typed'; then
+        echo "ERROR: py.typed marker missing from wheel $whl" >&2
+        rm -rf /tmp/pyteleinfo-check-wheel
+        exit 1
+    fi
+    echo "OK: py.typed found in $whl"
+    rm -rf /tmp/pyteleinfo-check-wheel
+
 # All tests and checks
 [group('test')]
 tox:

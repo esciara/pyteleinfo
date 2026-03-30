@@ -41,6 +41,14 @@ jobs:
       - run: just setup-dev-env-full
       - run: just test
 
+  check-py-typed:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+      - uses: extractions/setup-just@v2
+      - run: just check-py-typed
+
   docs:
     runs-on: ubuntu-latest
     steps:
