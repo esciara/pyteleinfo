@@ -6,4 +6,4 @@ to remove if cannot find why anymore)
 
 """
 
-__version__ = "0.3.0"
+__version__ = "0.3.1"
