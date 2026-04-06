@@ -14,7 +14,7 @@ teleinfo modes.
 - Decode teleinfo frames from French ENEDIS electricity meters
 - Encode data back to teleinfo format
 - Support for both historical and standard modes
-- Async I/O support with pyserial-asyncio
+- Async I/O support with pyserial-asyncio-fast
 - Command-line interface for reading teleinfo data
 - Comprehensive exception handling
 

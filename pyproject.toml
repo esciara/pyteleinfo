@@ -3,7 +3,7 @@
 
 [project]
 name = "pyteleinfo"
-version = "0.3.1"
+version = "0.4.0"
 description = ""
 authors = [
     {name = "Emmanuel Sciara", email = "emmanuel.sciara@gmail.com"}
@@ -30,7 +30,7 @@ classifiers = [
 ]
 dependencies = [
     "pyserial>=3.5",
-    "pyserial-asyncio>=0.6",
+    "pyserial-asyncio-fast",
     "pydantic-settings>=2.13.1",
 ]
 

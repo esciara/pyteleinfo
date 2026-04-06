@@ -1,10 +1,9 @@
 import asyncio
 import json
 import sys
-
 import termios
 
-import serial_asyncio
+import serial_asyncio_fast
 from pydantic import BaseModel, Field
 from pydantic_settings import CliImplicitFlag, CliPositionalArg
 from serial.tools import list_ports
@@ -82,7 +81,7 @@ async def _extract_frame_to_print(port: str, raw_flag: bool, settings: TeleinfoS
 
 
 async def async_receive_frame(port: str, settings: TeleinfoSettings):
-    slave_reader, _ = await serial_asyncio.open_serial_connection(
+    slave_reader, _ = await serial_asyncio_fast.open_serial_connection(
         url=port,
         baudrate=settings.baudrate,
         bytesize=settings.bytesize,

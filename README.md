@@ -12,7 +12,7 @@ tele-information communication frames specifications for French electronic elect
 - **Decode teleinfo frames** from French ENEDIS electricity meters
 - **Encode data** back to teleinfo format
 - **Read frames from serial port** with configurable settings
-- **Async I/O support** with pyserial-asyncio
+- **Async I/O support** with pyserial-asyncio-fast
 - Comprehensive **exception handling**
 - **Pydantic-based settings** with environment variable support
 
@@ -61,7 +61,7 @@ raw = read_frame("/dev/ttyUSB0", settings=settings)
 
 - Python >= 3.12
 - pyserial >= 3.5
-- pyserial-asyncio >= 0.6
+- pyserial-asyncio-fast
 - pydantic-settings >= 2.13.1
 
 ## Development
