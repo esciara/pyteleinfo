@@ -31,7 +31,7 @@ classifiers = [
 dependencies = [
     "pyserial>=3.5",
     "pyserial-asyncio-fast",
-    "pydantic-settings>=2.13.1",
+    "pydantic-settings>=2.14.2",
 ]
 
 [dependency-groups]
