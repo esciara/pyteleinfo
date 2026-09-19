@@ -132,7 +132,7 @@ def test_read_frame_propagates_missing_device_error(mocker):
         side_effect=FileNotFoundError(2, "No such file or directory", "/dev/ttyUSB0"),
     )
 
-    with pytest.raises(OSError):
+    with pytest.raises(FileNotFoundError):
         read_frame("/dev/ttyUSB0")
 
 
