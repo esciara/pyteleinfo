@@ -35,3 +35,6 @@ Then run every end-to-end check the task describes, exactly as described.
   still record it as failed and say it matches the listed pre-existing issue.
 - Do not diagnose or propose fixes; report facts so the fix stage can act on them.
 - Do not run `git commit`, `git push`, `git stash`, `git checkout` or `git reset`.
+- Verify only the acceptance commands and behaviours you were given. The commit and push are
+  a later stage of the workflow, so never treat git state (uncommitted changes, a missing
+  commit, an unpushed branch) as a check, and never invent checks the task does not list.
