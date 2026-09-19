@@ -55,8 +55,9 @@ const PLAN_SCHEMA = {
     acceptanceBehaviour: { type: 'array', items: { type: 'string' } },
     constraints: { type: 'array', items: { type: 'string' } },
     outOfScope: { type: 'array', items: { type: 'string' } },
+    headAtPlan: { type: 'string' },
   },
-  required: ['summary', 'steps', 'acceptanceCommands', 'acceptanceBehaviour', 'constraints'],
+  required: ['summary', 'steps', 'acceptanceCommands', 'acceptanceBehaviour', 'constraints', 'headAtPlan'],
 }
 
 const CHECK_SCHEMA = {
@@ -130,6 +131,17 @@ const fmtFindings = (findings) =>
     .map((f, i) => `${i + 1}. [${f.severity}] ${f.file}:${f.line} — ${f.summary}\n   fails how: ${f.failure}\n   proposed fix: ${f.proposedFix}`)
     .join('\n')
 
+// Canonical signature of what a round asks the fix stage to do: the failed check commands and
+// the blocking finding summaries, each trimmed, sorted and deduplicated. Two rounds with the
+// same signature mean the fix stage changed nothing that review or verification can see.
+const roundSignature = (blocking, failed) => {
+  const norm = (items) => Array.from(new Set(items.map((s) => String(s).trim()))).sort()
+  return JSON.stringify({
+    failedChecks: norm(failed.map((c) => c.command)),
+    blockingFindings: norm(blocking.map((f) => f.summary)),
+  })
+}
+
 // ── Plan ────────────────────────────────────────────────────────────────────
 phase('Plan')
 const plan = await agent(
@@ -138,7 +150,8 @@ const plan = await agent(
 )
 if (!plan) throw new Error('Planner produced no plan')
 const planText = JSON.stringify(plan, null, 2)
-log(`Plan: ${plan.steps.length} steps, ${plan.acceptanceCommands.length} acceptance commands, ${plan.constraints.length} constraints`)
+log(`Plan: ${plan.steps.length} steps, ${plan.acceptanceCommands.length} acceptance commands, ${plan.constraints.length} constraints, HEAD at plan ${plan.headAtPlan}`)
+const HEAD_NOTE = `HEAD when the plan was produced: ${plan.headAtPlan}. No stage before the commit stage may commit; if HEAD differs from this, an earlier stage committed.`
 
 // ── Implement ───────────────────────────────────────────────────────────────
 phase('Implement')
@@ -156,7 +169,9 @@ const history = []
 let review = null
 let verification = null
 let previousBlocking = []
+let previousSignature = null
 let green = false
+let repeated = false
 let round = 0
 
 while (round < maxRounds) {
@@ -168,7 +183,7 @@ while (round < maxRounds) {
   const [reviewResult, verifyResult] = await parallel([
     () =>
       agent(
-        `Mode: review (round ${round}).\n\n${TASK}\n\nApproved plan (JSON):\n${planText}${previous}\n\nReview the complete working-tree change against the plan and the task's constraints. Report findings as structured data.`,
+        `Mode: review (round ${round}).\n\n${TASK}\n\n${HEAD_NOTE}\n\nApproved plan (JSON):\n${planText}${previous}\n\nReview the complete working-tree change against the plan and the task's constraints. Report findings as structured data.`,
         { agentType: 'reviewer', phase: 'Review', schema: REVIEW_SCHEMA, label: `review r${round}` },
       ),
     () =>
@@ -186,14 +201,20 @@ while (round < maxRounds) {
   const agentLost = !review || !verification
   const roundGreen = !agentLost && blocking.length === 0 && failed.length === 0 && verification.allPassed === true
 
+  const signature = agentLost ? null : roundSignature(blocking, failed)
+  repeated = !roundGreen && signature !== null && previousSignature !== null && signature === previousSignature
+
   history.push({
     round,
     blocking: blocking.length,
     nits: nits.length,
     failedChecks: failed.length,
+    failedCheckCommands: failed.map((c) => c.command),
+    blockingSummaries: blocking.map((f) => f.summary),
     reviewerLost: !review,
     verifierLost: !verification,
     green: roundGreen,
+    repeatedPreviousRound: repeated,
   })
   log(`Round ${round}: ${blocking.length} blocking, ${nits.length} nits, ${failed.length} failed checks${agentLost ? ' (an agent was lost, round not trusted)' : ''}`)
 
@@ -201,7 +222,15 @@ while (round < maxRounds) {
     green = true
     break
   }
+  if (repeated) {
+    // The fix stage changed nothing review or verification can see. Another fix round would
+    // receive the identical prompt and most likely produce the identical result; stop now
+    // rather than spend the remaining rounds.
+    log(`Round ${round} repeated round ${round - 1} verbatim (same failed checks and blocking findings); stopping with status red.`)
+    break
+  }
   if (round === maxRounds) break
+  previousSignature = signature
 
   if (agentLost && blocking.length === 0 && failed.length === 0) {
     // Nothing concrete to fix; re-run review and verification.
@@ -223,18 +252,21 @@ let commitResult = null
 if (green && wantCommit) {
   phase('Commit')
   commitResult = await agent(
-    `${TASK}\n\nPlan summary: ${plan.summary}\n\nReview reported no blocking findings and every verification check passed. Commit the working-tree changes and push${branch ? ` to branch \`${branch}\`` : ' to the branch the task names'}.${attribution ? `\n\nAppend these trailer lines verbatim at the end of the commit message:\n${attribution}` : ''}`,
+    `${TASK}\n\n${HEAD_NOTE}\n\nPlan summary: ${plan.summary}\n\nReview reported no blocking findings and every verification check passed. Commit the working-tree changes and push${branch ? ` to branch \`${branch}\`` : ' to the branch the task names'}.${attribution ? `\n\nAppend these trailer lines verbatim at the end of the commit message:\n${attribution}` : ''}`,
     { agentType: 'committer', phase: 'Commit', schema: COMMIT_SCHEMA, label: 'commit' },
   )
   if (commitResult) log(`Committed ${commitResult.commit} on ${commitResult.branch}, pushed=${commitResult.pushed}`)
 } else if (green) {
   log('Green. Commit not requested (args.commit is not true); working tree left uncommitted.')
+} else if (repeated) {
+  log(`Stopped after ${round} round(s): the last round repeated the previous one verbatim. Nothing committed.`)
 } else {
   log(`Not green after ${round} round(s). Nothing committed.`)
 }
 
 return {
   status: green ? 'green' : 'red',
+  stopReason: green ? 'green' : repeated ? 'round repeated verbatim' : 'out of rounds',
   rounds: round,
   history,
   plan,
