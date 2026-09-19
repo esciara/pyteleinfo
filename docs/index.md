@@ -26,6 +26,12 @@ Install from PyPI:
 pip install pyteleinfo
 ```
 
+## Requirements
+
+- Python >= 3.12
+- serialx >= 1.10.0
+- pydantic-settings >= 2.13.1
+
 ## Quick Start
 
 ### Reading Teleinfo Data
@@ -39,6 +45,10 @@ decoded = decode_frame(raw_frame)
 print(decoded)
 # Output: JSON representation of the teleinfo data
 ```
+
+`read_frame` raises `TimeoutError` when no complete frame arrives in time, and lets
+serial errors propagate as native exceptions (`FileNotFoundError` for a missing device,
+`OSError` for I/O failures); there is no pyserial `SerialException` any more.
 
 ### Command Line Usage
 
