@@ -12,7 +12,7 @@ tele-information communication frames specifications for French electronic elect
 - **Decode teleinfo frames** from French ENEDIS electricity meters
 - **Encode data** back to teleinfo format
 - **Read frames from serial port** with configurable settings
-- **Async I/O support** with pyserial-asyncio-fast
+- **Native sync and async I/O** with [serialx](https://pypi.org/project/serialx/)
 - Comprehensive **exception handling**
 - **Pydantic-based settings** with environment variable support
 
@@ -57,11 +57,14 @@ settings = TeleinfoSettings(baudrate=9600, timeout=10.0)
 raw = read_frame("/dev/ttyUSB0", settings=settings)
 ```
 
+`read_frame` raises `TimeoutError` when no complete frame arrives in time, and lets
+serial errors propagate as native exceptions (`FileNotFoundError` for a missing device,
+`OSError` for I/O failures).
+
 ## Requirements
 
 - Python >= 3.12
-- pyserial >= 3.5
-- pyserial-asyncio-fast
+- serialx >= 1.10.0
 - pydantic-settings >= 2.13.1
 
 ## Development

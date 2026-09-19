@@ -3,7 +3,7 @@
 from unittest.mock import MagicMock
 
 import pytest
-import serial
+import serialx
 from hamcrest import assert_that, equal_to
 
 from teleinfo.serial_reader import read_frame
@@ -15,12 +15,12 @@ from teleinfo.settings import TeleinfoSettings
 
 @pytest.fixture
 def mock_serial(mocker):
-    """Patch serial.Serial and return (mock_cls, mock_ser_instance)."""
-    mock_cls = mocker.patch("teleinfo.serial_reader.serial.Serial")
+    """Patch serialx.serial_for_url and return (mock_factory, mock_ser_instance)."""
+    mock_factory = mocker.patch("teleinfo.serial_reader.serialx.serial_for_url")
     mock_ser = MagicMock()
-    mock_cls.return_value.__enter__.return_value = mock_ser
-    mock_cls.return_value.__exit__.return_value = False
-    return mock_cls, mock_ser
+    mock_factory.return_value.__enter__.return_value = mock_ser
+    mock_factory.return_value.__exit__.return_value = False
+    return mock_factory, mock_ser
 
 
 @pytest.fixture
@@ -54,31 +54,31 @@ def test_read_frame_returns_complete_frame(mock_serial):
 
 
 def test_read_frame_uses_default_settings(mock_serial):
-    mock_cls, mock_ser = mock_serial
+    mock_factory, mock_ser = mock_serial
     mock_ser.read.side_effect = _bytes_to_reads(MINIMAL_FRAME)
 
     read_frame("/dev/ttyUSB0")
 
-    mock_cls.assert_called_once_with(
-        port="/dev/ttyUSB0",
+    mock_factory.assert_called_once_with(
+        "/dev/ttyUSB0",
         baudrate=1200,
-        bytesize=serial.SEVENBITS,
-        parity=serial.PARITY_EVEN,
-        stopbits=serial.STOPBITS_ONE,
-        rtscts=1,
-        timeout=5.0,
+        byte_size=serialx.SEVENBITS,
+        parity=serialx.PARITY_EVEN,
+        stopbits=serialx.STOPBITS_ONE,
+        rtscts=True,
+        read_timeout=5.0,
     )
 
 
 def test_read_frame_uses_custom_settings(mock_serial):
-    mock_cls, mock_ser = mock_serial
+    mock_factory, mock_ser = mock_serial
     mock_ser.read.side_effect = _bytes_to_reads(MINIMAL_FRAME)
     settings = TeleinfoSettings(timeout=10.0)
 
     read_frame("/dev/ttyUSB0", settings=settings)
 
-    _, kwargs = mock_cls.call_args
-    assert_that(kwargs["timeout"], equal_to(10.0))
+    _, kwargs = mock_factory.call_args
+    assert_that(kwargs["read_timeout"], equal_to(10.0))
 
 
 # ── timeout cases ───────────────────────────────────────────────────────────
@@ -123,16 +123,16 @@ def test_read_frame_raises_timeout_on_empty_read_after_stx(mock_serial):
         read_frame("/dev/ttyUSB0")
 
 
-# ── serial exception propagation ───────────────────────────────────────────
+# ── port-open error propagation ────────────────────────────────────────────
 
 
-def test_read_frame_propagates_serial_exception(mocker):
+def test_read_frame_propagates_missing_device_error(mocker):
     mocker.patch(
-        "teleinfo.serial_reader.serial.Serial",
-        side_effect=serial.SerialException("Port not found"),
+        "teleinfo.serial_reader.serialx.serial_for_url",
+        side_effect=FileNotFoundError(2, "No such file or directory", "/dev/ttyUSB0"),
     )
 
-    with pytest.raises(serial.SerialException):
+    with pytest.raises(OSError):
         read_frame("/dev/ttyUSB0")
 
 

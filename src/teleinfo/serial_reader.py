@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import time
 
-import serial
+import serialx
 
 from .const import ENCODING, ETX_TOKEN, STX_TOKEN
 from .settings import TeleinfoSettings
@@ -17,7 +17,8 @@ def read_frame(port: str, settings: TeleinfoSettings | None = None) -> bytes:
     to prevent blocking indefinitely.
 
     Args:
-        port: Serial device path (e.g. ``"/dev/ttyUSB0"``).
+        port: Serial device path (e.g. ``"/dev/ttyUSB0"``) or any URL
+            understood by :func:`serialx.serial_for_url`.
         settings: Serial and timeout configuration. Defaults to
             :class:`~teleinfo.settings.TeleinfoSettings` when ``None``.
 
@@ -26,7 +27,8 @@ def read_frame(port: str, settings: TeleinfoSettings | None = None) -> bytes:
 
     Raises:
         TimeoutError: Deadline exceeded waiting for STX/ETX, or no data received.
-        serial.SerialException: Port-open or I/O failures (propagated directly).
+        OSError: Port-open or I/O failures (propagated directly). A missing
+            device raises :class:`FileNotFoundError`.
     """
     if settings is None:
         settings = TeleinfoSettings()
@@ -35,14 +37,14 @@ def read_frame(port: str, settings: TeleinfoSettings | None = None) -> bytes:
     etx = ETX_TOKEN.encode(ENCODING)
     deadline = time.monotonic() + settings.timeout
 
-    with serial.Serial(
-        port=port,
+    with serialx.serial_for_url(
+        port,
         baudrate=settings.baudrate,
-        bytesize=settings.bytesize,
+        byte_size=settings.bytesize,
         parity=settings.parity,
         stopbits=settings.stopbits,
         rtscts=settings.rtscts,
-        timeout=settings.timeout,
+        read_timeout=settings.timeout,
     ) as ser:
         # Read until we find STX (start of frame)
         while True:
