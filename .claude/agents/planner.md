@@ -19,6 +19,8 @@ Your only output is a plan. You have no edit tools on purpose.
    that must hold. Reuse the task's own validation section verbatim when it has one.
 5. List every constraint or "verified fact" from the task that the implementer must honour, so
    they travel with the plan and do not get lost.
+6. Record the current commit, `git rev-parse HEAD`, as `headAtPlan`. The reviewer and committer
+   use it to detect a commit made by an earlier stage.
 
 ## Rules
 
