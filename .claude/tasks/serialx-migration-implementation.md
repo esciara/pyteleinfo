@@ -84,8 +84,12 @@ Leave these alone and mention them in the summary: two `B905` ruff findings in `
 
 ## Deliverable
 
-If the audit finds gaps: one commit with a descriptive message listing each gap closed, pushed
-to the assigned branch. If the audit finds no gaps and every check passes: no commit, and the
-report says so explicitly. Either way: a summary of what was audited and changed, the
-verification results as a table with the verifier's real output for the acceptance commands and
-the PTY run, and anything left out.
+The working-tree changes that close the gaps the audit found, with every acceptance command and
+the end-to-end behaviour passing. If the audit finds no gaps, no change at all.
+
+The commit, push and final report are done by the workflow after review and verification pass,
+not by the implementation; they are not acceptance criteria. Commit-message requirements for
+that stage: one commit, a descriptive message listing each gap closed, on the assigned branch,
+no pull request. Report requirements: what was audited and changed, the verification results as
+a table with the verifier's real output for the acceptance commands and the PTY run, anything
+left out, and an explicit statement when no gap was found and nothing was committed.
