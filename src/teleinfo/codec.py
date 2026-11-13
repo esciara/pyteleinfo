@@ -180,7 +180,7 @@ def _verify_frame_well_formed(frame: str):
         )
         errors = _append_error(errors, error)
     else:
-        results = [i > j for (i, j) in zip(beginnings, ends)]
+        results = [i > j for (i, j) in zip(beginnings, ends, strict=False)]
         if any(results):
             indices = [i for i, x in enumerate(results) if x is True]
             faulty_pairs = [(beginnings[i], ends[i]) for i in indices]
@@ -202,7 +202,7 @@ def _extract_info_groups_positions(frame: str) -> Tuple[List[int], List[int]]:
 
 def _extract_info_groups(frame: str) -> list:
     beginnings, ends = _extract_info_groups_positions(frame)
-    info_groups = [frame[beginning : end + 1] for (beginning, end) in zip(beginnings, ends)]
+    info_groups = [frame[beginning : end + 1] for (beginning, end) in zip(beginnings, ends, strict=False)]
     return info_groups
 
 
