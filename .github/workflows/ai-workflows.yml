@@ -1,0 +1,106 @@
+# .github/workflows/ai-workflows.yml in a TARGET repo.
+# Events in, one call per reusable workflow out. Secrets are passed explicitly (never `inherit`).
+# Each job grants the most its called workflow needs; the called jobs narrow it with their own `permissions:`.
+# Every `uses:` of esciara/ai-workflows is pinned to one release commit SHA with its tag in a comment (ADR-0040); scripts
+# load from the same commit (ADR-0019). To upgrade, replace the SHA and the tag on every line together (docs/install.md).
+# Review only: delete the `triage` job and set `workflows.triage: false` in .github/ai-workflows.yml.
+name: AI workflows
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+  # Fork PRs only, API calls only (ADR-0044): a fork push removes a stale verdict label. Never checks out the PR.
+  pull_request_target:
+    types: [synchronize]
+  issue_comment:
+    types: [created]
+  issues:
+    types: [opened]
+  schedule:
+    - cron: '17 5 * * *'          # daily jobs: labels sync, reporter silence (WP7)
+  workflow_dispatch:
+    inputs:
+      config_ref:
+        description: Validate the config from this ref instead of the default branch (diagnostics)
+        type: string
+        default: ''
+
+# One group per item for pushes and commands: a new push waits for the running review, never runs beside it. A group keeps
+# only one pending run, so a comment that cannot be a command gets its own group (the run_id): it never replaces a
+# queued review. A command is `/` after at most 3 spaces on the first non-blank line (ADR-0005); any comment with `/`
+# at its start, after a space or after a newline stays in the item's group (a false positive only waits).
+concurrency:
+  group: ai-workflows-${{ github.event_name == 'pull_request_target' && 'fork-push-' || '' }}${{ github.event_name == 'issue_comment' && !startsWith(github.event.comment.body, '/') && !contains(github.event.comment.body, ' /') && !contains(github.event.comment.body, fromJSON('"\n/"')) && format('comment-{0}-', github.run_id) || '' }}${{ github.event.pull_request.number || github.event.issue.number || github.run_id }}
+  cancel-in-progress: false
+
+# Least privilege by default (ADR-0017); every job below grants what its called workflow needs.
+permissions: {}
+
+jobs:
+  # Also parses a comment's slash command once (ADR-0005); review and triage run only on the command they handle.
+  config:
+    uses: esciara/ai-workflows/.github/workflows/config.yml@971b60126a957026a2e939ee1c527fdac7d340af # v0.1.0
+    permissions:
+      contents: read
+    with:
+      config_ref: ${{ inputs.config_ref || '' }}
+
+  # Label set (ADR-0023): only on a manual run or the daily schedule. Run the workflow once by hand after install.
+  labels:
+    needs: config
+    if: needs.config.outputs.enabled == 'true' && (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule')
+    uses: esciara/ai-workflows/.github/workflows/labels.yml@971b60126a957026a2e939ee1c527fdac7d340af # v0.1.0
+    permissions:
+      issues: write
+
+  # Workflow A: PR events review same-repo PRs; `/review` from a maintainer reviews any PR, fork PRs included (WP4).
+  review:
+    needs: config
+    if: needs.config.outputs.review == 'true' && (github.event_name == 'pull_request' || (github.event_name == 'issue_comment' && github.event.issue.pull_request))
+    uses: esciara/ai-workflows/.github/workflows/review.yml@971b60126a957026a2e939ee1c527fdac7d340af # v0.1.0
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      checks: read
+      actions: read
+    with:
+      config: ${{ needs.config.outputs.config }}
+    secrets:
+      CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+
+  # Workflow A, fork PRs (ADR-0044): a fork push after a review removes the verdict label. No secrets, no checkout.
+  review-fork-push:
+    needs: config
+    if: needs.config.outputs.review == 'true' && github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name != github.repository
+    uses: esciara/ai-workflows/.github/workflows/review-fork-push.yml@971b60126a957026a2e939ee1c527fdac7d340af # v0.1.0
+    permissions:
+      pull-requests: write
+
+  # Workflow B (WP5: B1 classify on new issues and /retriage). Review-only install: delete this job.
+  triage:
+    needs: config
+    if: needs.config.outputs.triage == 'true' && (github.event_name == 'issues' || github.event_name == 'schedule' || (github.event_name == 'issue_comment' && !github.event.issue.pull_request))
+    uses: esciara/ai-workflows/.github/workflows/triage.yml@971b60126a957026a2e939ee1c527fdac7d340af # v0.1.0
+    # B1 reads the repo and PRs, writes only issue labels and comments. Widen when fixes (B5/B6) ship.
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: read
+    with:
+      config: ${{ needs.config.outputs.config }}
+    secrets:
+      CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+
+  # Chat notification test event (ADR-0024): a manual run sends one test message per channel in the config's `notify`.
+  # The only job given the Slack/Telegram secrets. Delete it if `notify: none`.
+  notify:
+    needs: config
+    if: needs.config.outputs.enabled == 'true' && github.event_name == 'workflow_dispatch' && fromJSON(needs.config.outputs.config).notify != 'none'
+    uses: esciara/ai-workflows/.github/workflows/notify.yml@971b60126a957026a2e939ee1c527fdac7d340af # v0.1.0
+    permissions: {}
+    with:
+      channels: ${{ fromJSON(needs.config.outputs.config).notify }}
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
