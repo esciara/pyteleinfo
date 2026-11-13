@@ -100,3 +100,4 @@ See [LICENSE](LICENSE) file for details.
 - **GitHub Repository**: [esciara/pyteleinfo](https://github.com/esciara/pyteleinfo)
 - **PyPI Package**: [pyteleinfo](https://pypi.org/project/pyteleinfo)
 - **Issue Tracker**: [GitHub Issues](https://github.com/esciara/pyteleinfo/issues)
+- **Releases**: [GitHub Releases](https://github.com/esciara/pyteleinfo/releases)
