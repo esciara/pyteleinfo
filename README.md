@@ -1,6 +1,6 @@
 # pyteleinfo
 
-A Python library for decoding and encoding ENEDIS teleinfo frames - implementation of the
+A Python library to decode and encoding ENEDIS teleinfo frames - implementation of the
 tele-information communication frames specifications for French electronic electricity meters.
 
 [![PyPI version](https://badge.fury.io/py/pyteleinfo.svg)](https://badge.fury.io/py/pyteleinfo)
