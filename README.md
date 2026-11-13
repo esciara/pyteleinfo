@@ -13,7 +13,7 @@ tele-information communication frames specifications for French electronic elect
 - **Encode data** back to teleinfo format
 - **Read frames from serial port** with configurable settings
 - **Native sync and async I/O** with [serialx](https://pypi.org/project/serialx/)
-- Comprehensive **exception handling**
+- Comprehensive **exception handling** for malformed frames
 - **Pydantic-based settings** with environment variable support
 
 ## Installation
