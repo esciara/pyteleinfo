@@ -29,7 +29,7 @@ classifiers = [
     "License :: OSI Approved :: BSD License",
 ]
 dependencies = [
-    "pydantic-settings>=2.13.1",
+    "pydantic-settings>=2.14.2",
     "serialx>=1.10.0",
 ]
 
