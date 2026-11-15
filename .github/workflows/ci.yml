@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v4
-      - uses: extractions/setup-just@v2
+      - uses: extractions/setup-just@v4
       - run: just setup-dev-env-full
       - run: just lint
       - run: just format-check
@@ -22,7 +22,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v4
-      - uses: extractions/setup-just@v2
+      - uses: extractions/setup-just@v4
       - run: just setup-dev-env-full
       - run: just type
 
@@ -37,7 +37,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - uses: astral-sh/setup-uv@v4
-      - uses: extractions/setup-just@v2
+      - uses: extractions/setup-just@v4
       - run: just setup-dev-env-full
       - run: just test
 
@@ -46,7 +46,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v4
-      - uses: extractions/setup-just@v2
+      - uses: extractions/setup-just@v4
       - run: just check-py-typed
 
   docs:
@@ -54,6 +54,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v4
-      - uses: extractions/setup-just@v2
+      - uses: extractions/setup-just@v4
       - run: just setup-dev-env-full
       - run: just docs
