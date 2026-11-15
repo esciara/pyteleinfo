@@ -3,7 +3,7 @@
 # Each job grants the most its called workflow needs; the called jobs narrow it with their own `permissions:`.
 # Every `uses:` of esciara/ai-workflows is pinned to one release commit SHA with its tag in a comment (ADR-0040); scripts
 # load from the same commit (ADR-0040). To upgrade, replace the SHA and the tag on every line together (docs/install.md).
-# Review only: delete the `triage` job and set `workflows.triage: false` in .github/ai-workflows.yml.
+# Review only: delete the `triage` and `silence` jobs and set `workflows.triage: false` in .github/ai-workflows.yml.
 name: AI workflows
 on:
   pull_request:
@@ -38,7 +38,7 @@ permissions: {}
 jobs:
   # Also parses a comment's slash command once (ADR-0005); review and triage run only on the command they handle.
   config:
-    uses: esciara/ai-workflows/.github/workflows/config.yml@bd6bbbd8b7d425d9dd7ff4f1f0a722166d6df090 # v0.2.0
+    uses: esciara/ai-workflows/.github/workflows/config.yml@c945128a67dd125e57c9f70f446175024835121d # v0.3.0
     permissions:
       contents: read
     with:
@@ -48,7 +48,7 @@ jobs:
   labels:
     needs: config
     if: needs.config.outputs.enabled == 'true' && (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule')
-    uses: esciara/ai-workflows/.github/workflows/labels.yml@bd6bbbd8b7d425d9dd7ff4f1f0a722166d6df090 # v0.2.0
+    uses: esciara/ai-workflows/.github/workflows/labels.yml@c945128a67dd125e57c9f70f446175024835121d # v0.3.0
     permissions:
       issues: write
 
@@ -56,9 +56,10 @@ jobs:
   review:
     needs: config
     if: needs.config.outputs.review == 'true' && (github.event_name == 'pull_request' || (github.event_name == 'issue_comment' && github.event.issue.pull_request))
-    uses: esciara/ai-workflows/.github/workflows/review.yml@bd6bbbd8b7d425d9dd7ff4f1f0a722166d6df090 # v0.2.0
+    uses: esciara/ai-workflows/.github/workflows/review.yml@c945128a67dd125e57c9f70f446175024835121d # v0.3.0
     permissions:
-      contents: read
+      contents: write  # the publish job resolves A's fixed threads (ADR-0057); the agents get none of it. Set it
+      # before bumping the pin to a release with WP18: with contents: read GitHub refuses the whole run (docs/install.md).
       pull-requests: write
       issues: write
       checks: read
@@ -72,20 +73,21 @@ jobs:
   review-fork-push:
     needs: config
     if: needs.config.outputs.review == 'true' && github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name != github.repository
-    uses: esciara/ai-workflows/.github/workflows/review-fork-push.yml@bd6bbbd8b7d425d9dd7ff4f1f0a722166d6df090 # v0.2.0
+    uses: esciara/ai-workflows/.github/workflows/review-fork-push.yml@c945128a67dd125e57c9f70f446175024835121d # v0.3.0
     permissions:
       pull-requests: write
 
-  # Workflow B (WP5: B1 classify on new issues and /retriage). Review-only install: delete this job.
+  # Workflow B (B1 to B5). Review-only install: delete this job.
   triage:
     needs: config
     if: needs.config.outputs.triage == 'true' && (github.event_name == 'issues' || (github.event_name == 'issue_comment' && !github.event.issue.pull_request))
-    uses: esciara/ai-workflows/.github/workflows/triage.yml@bd6bbbd8b7d425d9dd7ff4f1f0a722166d6df090 # v0.2.0
-    # B1 reads the repo and PRs, writes only issue labels and comments. Widen when fixes (B5/B6) ship.
+    uses: esciara/ai-workflows/.github/workflows/triage.yml@c945128a67dd125e57c9f70f446175024835121d # v0.3.0
+    # Issue labels and comments; B5's push job writes `ai-fix/issue-<n>` (never `.github/`) and its escalation job opens
+    # a draft PR (which also needs the repo setting that lets GitHub Actions create pull requests).
     permissions:
-      contents: read
+      contents: write
       issues: write
-      pull-requests: read
+      pull-requests: write
     with:
       config: ${{ needs.config.outputs.config }}
     secrets:
@@ -100,7 +102,7 @@ jobs:
   silence:
     needs: config
     if: needs.config.outputs.triage == 'true' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
-    uses: esciara/ai-workflows/.github/workflows/silence.yml@bd6bbbd8b7d425d9dd7ff4f1f0a722166d6df090 # v0.2.0
+    uses: esciara/ai-workflows/.github/workflows/silence.yml@c945128a67dd125e57c9f70f446175024835121d # v0.3.0
     permissions:
       issues: write
     with:
@@ -111,7 +113,7 @@ jobs:
   notify:
     needs: config
     if: needs.config.outputs.enabled == 'true' && github.event_name == 'workflow_dispatch' && fromJSON(needs.config.outputs.config).notify != 'none'
-    uses: esciara/ai-workflows/.github/workflows/notify.yml@bd6bbbd8b7d425d9dd7ff4f1f0a722166d6df090 # v0.2.0
+    uses: esciara/ai-workflows/.github/workflows/notify.yml@c945128a67dd125e57c9f70f446175024835121d # v0.3.0
     permissions: {}
     with:
       channels: ${{ fromJSON(needs.config.outputs.config).notify }}
