@@ -103,7 +103,7 @@ jobs:
   silence:
     needs: config
     if: needs.config.outputs.triage == 'true' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
-    uses: esciara/ai-workflows/.github/workflows/silence.yml@c945128a67dd125e57c9f70f446175024835121d # v0.3.0
+    uses: esciara/ai-workflows/.github/workflows/silence.yml@049824c3cdddd39a3618d8b5de67b2506d998b49 # v0.3.2
     permissions:
       issues: write
     with:
