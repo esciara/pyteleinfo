@@ -114,7 +114,7 @@ jobs:
   notify:
     needs: config
     if: needs.config.outputs.enabled == 'true' && github.event_name == 'workflow_dispatch' && fromJSON(needs.config.outputs.config).notify != 'none'
-    uses: esciara/ai-workflows/.github/workflows/notify.yml@c945128a67dd125e57c9f70f446175024835121d # v0.3.0
+    uses: esciara/ai-workflows/.github/workflows/notify.yml@049824c3cdddd39a3618d8b5de67b2506d998b49 # v0.3.2
     permissions: {}
     with:
       channels: ${{ fromJSON(needs.config.outputs.config).notify }}
