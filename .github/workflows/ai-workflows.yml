@@ -38,7 +38,7 @@ permissions: {}
 jobs:
   # Also parses a comment's slash command once (ADR-0005); review and triage run only on the command they handle.
   config:
-    uses: esciara/ai-workflows/.github/workflows/config.yml@c945128a67dd125e57c9f70f446175024835121d # v0.3.0
+    uses: esciara/ai-workflows/.github/workflows/config.yml@049824c3cdddd39a3618d8b5de67b2506d998b49 # v0.3.2
     permissions:
       contents: read
     with:
