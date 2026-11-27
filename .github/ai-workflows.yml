@@ -18,6 +18,6 @@ notify: none                    # none | slack | telegram; not used yet, WP11b
 fork_prs: on-command            # on-command (review fork PRs only after /review) | off
 workflows:
   review: true                  # Workflow A
-  triage: false                 # Workflow B (enable after M2)
+  triage: true                 # Workflow B (enable after M2)
 # model: claude-sonnet-4-5      # optional model override for agent runs
 # required_checks: [test]       # optional; default: CI gate waits on all checks on the head SHA except ours
